@@ -1,24 +1,12 @@
 import Image from "next/image";
 import "./home.css";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
     <main>
-      <header className="header">
-        <div className="container headerInner">
-          <div className="logo">
-            <div className="logoIcon">M</div>
-            MOON TV
-          </div>
-          <nav className="nav">
-            <a href="#programmes" className="navLink">Programmes</a>
-            <a href="#schedule" className="navLink">Schedule</a>
-            <a href="#about" className="navLink">About</a>
-            <a href="#advertise" className="navLink">Advertise</a>
-          </nav>
-          <button className="btn btn-green">Watch Live</button>
-        </div>
-      </header>
+      <Header />
 
       <section className="hero">
         <div className="heroBackground">
@@ -200,47 +188,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="footer" id="advertise">
-        <div className="container">
-          <div className="footerTop">
-            <div className="footerLeft">
-              <h3 className="footerTitle">GET EARLY ACCESS</h3>
-              <p className="footerDesc">Join the waitlist to receive updates on our official launch.</p>
-              <div className="waitlistForm">
-                <input type="email" placeholder="Your email address" className="waitlistInput" />
-                <button className="waitlistBtn">Join Waitlist</button>
-              </div>
-            </div>
-            <div className="footerLinks">
-              <div className="footerCol">
-                <span className="footerColTitle">Programmes</span>
-                <a href="#" className="footerLink">Hello Nigeria</a>
-                <a href="#" className="footerLink">Cultural Crossroads</a>
-                <a href="#" className="footerLink">Innovations Hub</a>
-                <a href="#" className="footerLink">View All</a>
-              </div>
-              <div className="footerCol">
-                <span className="footerColTitle">Company</span>
-                <a href="#" className="footerLink">About Us</a>
-                <a href="#" className="footerLink">Careers</a>
-                <a href="#" className="footerLink">Advertise with us</a>
-                <a href="#" className="footerLink">Contact Form</a>
-              </div>
-              <div className="footerCol">
-                <span className="footerColTitle">Subscribe</span>
-                <a href="#" className="footerLink">Newsletter</a>
-                <a href="#" className="footerLink">Podcasts</a>
-                <a href="#" className="footerLink">Social Media</a>
-                <a href="#" className="footerLink">Press Office</a>
-              </div>
-            </div>
-          </div>
-          <div className="footerBottom">
-            <div className="bigLogo">MOON TV</div>
-            <p className="copyright">© 2026 Moon TV Digital Platform. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }
