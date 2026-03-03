@@ -25,18 +25,18 @@ export default function Contact() {
                         </form>
                     </div>
 
-                    <div style={{ marginTop: "4rem", textAlign: "center", display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border-color)", paddingTop: "4rem" }}>
+                    <div style={{ marginTop: "4rem", textAlign: "center", display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border-color)", paddingTop: "4rem", flexWrap: "wrap", gap: "2rem" }}>
+                        <div>
+                            <h4 style={{ color: "var(--accent-gold)", marginBottom: "0.5rem" }}>Website</h4>
+                            <p style={{ color: "var(--text-secondary)" }}>moontvonline.com</p>
+                        </div>
                         <div>
                             <h4 style={{ color: "var(--accent-gold)", marginBottom: "0.5rem" }}>Email Us</h4>
-                            <p style={{ color: "var(--text-secondary)" }}>hello@moontv.ng</p>
+                            <p style={{ color: "var(--text-secondary)" }}>hello@moontvonline.com</p>
                         </div>
                         <div>
-                            <h4 style={{ color: "var(--accent-gold)", marginBottom: "0.5rem" }}>General Enquiries</h4>
-                            <p style={{ color: "var(--text-secondary)" }}>+234 800 MOON TV</p>
-                        </div>
-                        <div>
-                            <h4 style={{ color: "var(--accent-gold)", marginBottom: "0.5rem" }}>Follow Us</h4>
-                            <p style={{ color: "var(--text-secondary)" }}>@MoonTVNigeria</p>
+                            <h4 style={{ color: "var(--accent-gold)", marginBottom: "0.5rem" }}>Social Media</h4>
+                            <p style={{ color: "var(--text-secondary)" }}>@MoonTVNG</p>
                         </div>
                     </div>
                 </div>

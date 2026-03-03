@@ -21,7 +21,7 @@ export default function Home() {
               <span>unite a nation.</span>
             </h1>
             <p className="heroDescription">
-              Moon TV is a national cultural broadcaster showcasing storytelling and the positive representation of Nigeria — in all its richness.
+              Moon TV is a cultural and unity-driven television network dedicated to reshaping Nigeria's narrative. We showcase authentic stories, celebrate diversity and spotlight the nation's talent and potential.
             </p>
             <div className="heroButtons">
               <button className="btn btn-green">Watch Live on Web</button>
@@ -83,17 +83,17 @@ export default function Home() {
         <div className="container">
           <div className="helloContainer">
             <div className="helloLeft">
-              <span className="section-subtitle">PROGRAMME HIGHLIGHT</span>
+              <span className="section-subtitle">FLAGSHIP CONTENT</span>
               <h2 className="helloTitle">Hello Nigeria</h2>
               <p className="helloDesc">
-                A new show that brings the entire nation closer. We highlight the stories of ordinary people doing extraordinary things, and we showcase the unique cultures of Nigeria.
+                Hello Nigeria is our flagship show celebrating Nigerian innovation, excellence and leadership across sectors. A national talk show designed to reposition Nigeria through truth, progress, and pride.
               </p>
               <div className="helloGrid">
                 {[
-                  { title: "Entertainment", desc: "The best of local music and art" },
-                  { title: "Community", desc: "Highlighting local heroes" },
-                  { title: "Culture", desc: "Showcasing our rich heritage" },
-                  { title: "Future", desc: "Discussing our bright tomorrow" }
+                  { title: "Innovation", desc: "Highlighting Nigerian breakthroughs" },
+                  { title: "Leadership", desc: "Accountability without hostility" },
+                  { title: "Culture", desc: "Safeguarding our heritage" },
+                  { title: "Progress", desc: "Shifting the narrative to hope" }
                 ].map((f, i) => (
                   <div className="helloFeature" key={i}>
                     <div className="featureIcon">✓</div>
@@ -165,8 +165,8 @@ export default function Home() {
 
       <section className="movementSection" id="about">
         <div className="container">
-          <span className="section-subtitle">OUR VALUES</span>
-          <h2 className="movementTitle">"Moon TV is not just a channel — it is a <span>cultural movement.</span>"</h2>
+          <span className="section-subtitle">WHERE NIGERIA'S ENERGY BEGINS</span>
+          <h2 className="movementTitle">"Moon TV reflects our pride, dignity, and <span>possibility.</span>"</h2>
           <div className="movementIcons">
             <div className="movementIconWrapper">
               <div className="mIcon">🤝</div>

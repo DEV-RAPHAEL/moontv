@@ -29,16 +29,16 @@ export default function Footer() {
                         </div>
                         <div className="footerCol">
                             <span className="footerColTitle">Subscribe</span>
-                            <a href="#" className="footerLink">Newsletter</a>
+                            <a href="https://moontvonline.com" className="footerLink">Website</a>
                             <a href="#" className="footerLink">Podcasts</a>
-                            <a href="#" className="footerLink">Social Media</a>
+                            <a href="#" className="footerLink">@MoonTVNG</a>
                             <a href="#" className="footerLink">Press Office</a>
                         </div>
                     </div>
                 </div>
                 <div className="footerBottom">
                     <div className="bigLogo">MOON TV</div>
-                    <p className="copyright">© 2026 Moon TV Digital Platform. All rights reserved.</p>
+                    <p className="copyright">© 2026 moontvonline.com. All rights reserved.</p>
                 </div>
             </div>
         </footer>
