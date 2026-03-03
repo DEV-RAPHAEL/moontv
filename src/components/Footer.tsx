@@ -16,9 +16,9 @@ export default function Footer() {
                     <div className="footerLinks">
                         <div className="footerCol">
                             <span className="footerColTitle">Programmes</span>
-                            <Link href="/programs/1" className="footerLink">Hello Nigeria</Link>
-                            <Link href="/programs/2" className="footerLink">Cultural Crossroads</Link>
-                            <Link href="/programs/3" className="footerLink">Innovations Hub</Link>
+                            <Link href="/program/hello-nigeria" className="footerLink">Hello Nigeria</Link>
+                            <Link href="/program/our-heritage" className="footerLink">Cultural Crossroads</Link>
+                            <Link href="/program/tech-spotlight" className="footerLink">Innovations Hub</Link>
                             <Link href="/programs" className="footerLink">View All</Link>
                         </div>
                         <div className="footerCol">

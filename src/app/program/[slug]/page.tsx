@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "../../home.css";
 
-export default async function ProgramDetail({ params }: { params: { id: string } }) {
+export default async function ProgramDetail({ params }: { params: { slug: string } }) {
     // Mock data for the ID
     const prog = {
         title: "Hello Nigeria",
@@ -82,14 +82,14 @@ export default async function ProgramDetail({ params }: { params: { id: string }
                             <div style={{ backgroundColor: "var(--bg-secondary)", borderRadius: "12px", padding: "2rem", border: "1px solid var(--border-color)", position: "sticky", top: "100px" }}>
                                 <h3 style={{ fontSize: "1.2rem", color: "var(--accent-gold)", marginBottom: "1.5rem" }}>Other Programmes</h3>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                                    <a href="/programs/2" style={{ display: "flex", gap: "1rem", alignItems: "center", borderBottom: "1px solid var(--border-color)", paddingBottom: "1rem" }}>
+                                    <a href="/program/our-heritage" style={{ display: "flex", gap: "1rem", alignItems: "center", borderBottom: "1px solid var(--border-color)", paddingBottom: "1rem" }}>
                                         <img src="/program_1.png" style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: "4px" }} alt="" />
                                         <div>
                                             <h4 style={{ fontSize: "1rem", color: "white" }}>Our Heritage</h4>
                                             <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>DOCUMENTARY</span>
                                         </div>
                                     </a>
-                                    <a href="/programs/3" style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                                    <a href="/program/tech-spotlight" style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
                                         <img src="/program_2.png" style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: "4px" }} alt="" />
                                         <div>
                                             <h4 style={{ fontSize: "1rem", color: "white" }}>Tech Spotlight</h4>
