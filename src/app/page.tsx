@@ -9,12 +9,12 @@ export default function Home() {
       <Header />
 
       <section className="hero">
-        <div className="heroBackground">
-          <Image src="/hero_bg.png" alt="Moon TV Background" fill priority />
+        <div className="heroBackground animate-scale-in">
+          <Image src="/hero_bg.png" alt="Moon TV Background" fill priority style={{ objectFit: 'cover' }} />
         </div>
-        <div className="heroOverlay"></div>
+        <div className="heroOverlay animate-fade-in delay-200"></div>
         <div className="container heroContent">
-          <div className="heroLeft">
+          <div className="heroLeft animate-fade-left delay-300">
             <span className="section-subtitle">MOON TV IS NIGERIA</span>
             <h1 className="heroTitle">
               Stories that
@@ -23,12 +23,12 @@ export default function Home() {
             <p className="heroDescription">
               Moon TV is a cultural and unity-driven television network dedicated to reshaping Nigeria's narrative. We showcase authentic stories, celebrate diversity and spotlight the nation's talent and potential.
             </p>
-            <div className="heroButtons">
+            <div className="heroButtons animate-fade-up delay-500">
               <button className="btn btn-green">Watch Live on Web</button>
               <button className="btn btn-outline-gold">View Programmes</button>
             </div>
           </div>
-          <div className="heroRight">
+          <div className="heroRight animate-fade-right delay-400">
             <div className="statItem">
               <span className="statNumber">30+</span>
               <span className="statLabel">Local Programs</span>
@@ -45,7 +45,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="playerSection">
+      <section className="playerSection animate-fade-up delay-300">
         <div className="playerContainer">
           <Image src="/mountain.png" alt="Moon TV Player" fill style={{ objectFit: "cover" }} />
           <div className="playPauseBtn">▶</div>
@@ -81,7 +81,7 @@ export default function Home() {
 
       <section className="helloSection">
         <div className="container">
-          <div className="helloContainer">
+          <div className="helloContainer animate-fade-up delay-200">
             <div className="helloLeft">
               <span className="section-subtitle">FLAGSHIP CONTENT</span>
               <h2 className="helloTitle">Hello Nigeria</h2>
