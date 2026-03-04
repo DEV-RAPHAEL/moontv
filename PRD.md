@@ -1,6 +1,6 @@
 # MOON TV – PRODUCT REQUIREMENTS DOCUMENT (PRD)
 Product: Moon TV Digital Platform
-Platforms: Website (WordPress Backend) + Android App (Flutter)
+Platforms: Website (WordPress Backend) + Android App (React Native)
 Version: MVP – Phase 1
 
 ## 1. Product Overview
