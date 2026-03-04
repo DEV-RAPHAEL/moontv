@@ -10,7 +10,7 @@ export default function Home() {
 
       <section className="hero">
         <div className="heroBackground animate-scale-in">
-          <Image src="/hero_bg.png" alt="Moon TV Background" fill priority style={{ objectFit: 'cover' }} />
+          <Image src="./hero_bg.png" alt="Moon TV Background" fill priority style={{ objectFit: 'cover' }} />
         </div>
         <div className="heroOverlay animate-fade-in delay-200"></div>
         <div className="container heroContent">
