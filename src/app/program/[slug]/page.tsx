@@ -2,6 +2,16 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "../../home.css";
 
+export async function generateStaticParams() {
+    return [
+        { slug: "hello-nigeria" },
+        { slug: "nollywood-nights" },
+        { slug: "our-heritage" },
+        { slug: "legends-of-the-screen" },
+        { slug: "tech-spotlight" },
+    ];
+}
+
 export default async function ProgramDetail({ params }: { params: { slug: string } }) {
     // Mock data for the ID
     const prog = {
