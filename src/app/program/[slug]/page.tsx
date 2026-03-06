@@ -2,24 +2,46 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "../../home.css";
 
-export async function generateStaticParams() {
-    return [
-        { slug: "hello-nigeria" },
-        { slug: "nollywood-nights" },
-        { slug: "our-heritage" },
-        { slug: "legends-of-the-screen" },
-        { slug: "tech-spotlight" },
-    ];
-}
+import { notFound } from 'next/navigation';
+import { getProgrammeBySlug } from '@/lib/api';
 
 export default async function ProgramDetail({ params }: { params: { slug: string } }) {
-    // Mock data for the ID
+    // Await params to avoid Next.js 15+ warnings if applicable, or destructure directly
+    const slug = params.slug;
+
+    // Fetch live from WP
+    const rawProg = await getProgrammeBySlug(slug);
+
+    if (!rawProg) {
+        notFound();
+    }
+
+    const details = rawProg.advanced_details || {};
+
+    // Map to the object we need
     const prog = {
-        title: "Hello Nigeria",
-        category: "FLAGSHIP TALK SHOW",
-        time: "Mon - Fri • 18:00 WAT",
-        image: "/microphone.png",
-        synopsis: "A national talk show designed to reposition Nigeria through truth, progress, and pride—safeguarding our culture, highlighting breakthroughs, innovation, leadership, and accountability across sectors.",
+        title: rawProg.title.rendered,
+        category: details.category_badge || "PROGRAMME",
+        time: details.time || "Time TBD",
+        image: rawProg.featured_image_url || "/mountain.png",
+        synopsis: rawProg.content.rendered.replace(/<[^>]+>/g, '') || "Watch this amazing programme on Moon TV.",
+        purpose: details.purpose,
+        audience: details.audience,
+        format: details.format,
+        personality: details.personality,
+        context: details.context
+    };
+
+    // Helper to safely split bullet points from text areas
+    const renderBullets = (text: string) => {
+        if (!text) return <li>Information pending.</li>;
+        return text.split('\n')
+            .filter(t => t.trim().length > 0)
+            .map((t, idx) => {
+                let clean = t.trim();
+                if (clean.startsWith('-')) clean = clean.substring(1).trim();
+                return <li key={idx}>{clean}</li>;
+            });
     };
 
     return (
@@ -50,19 +72,14 @@ export default async function ProgramDetail({ params }: { params: { slug: string
                                 <div style={{ backgroundColor: "var(--bg-secondary)", padding: "2rem", borderRadius: "8px", borderLeft: "3px solid var(--accent-gold)" }}>
                                     <h3 style={{ fontSize: "1.2rem", marginBottom: "1rem", color: "white" }}>Show Purpose</h3>
                                     <ul style={{ color: "var(--text-secondary)", paddingLeft: "1.2rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                                        <li>Celebrate positive Nigerian achievements</li>
-                                        <li>Shift national narrative from despair to progress</li>
-                                        <li>Amplify Nigerian excellence by Nigerians</li>
-                                        <li>Encourage accountability without hostility</li>
+                                        {renderBullets(prog.purpose)}
                                     </ul>
                                 </div>
 
                                 <div style={{ backgroundColor: "var(--bg-secondary)", padding: "2rem", borderRadius: "8px", borderLeft: "3px solid var(--button-green)" }}>
                                     <h3 style={{ fontSize: "1.2rem", marginBottom: "1rem", color: "white" }}>Core Audience</h3>
                                     <ul style={{ color: "var(--text-secondary)", paddingLeft: "1.2rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                                        <li>Ages 18–85</li>
-                                        <li>Politically aware, socially conscious Nigerians</li>
-                                        <li>Citizens who influence conversations online and offline</li>
+                                        {renderBullets(prog.audience)}
                                     </ul>
                                 </div>
                             </div>
@@ -72,19 +89,19 @@ export default async function ProgramDetail({ params }: { params: { slug: string
                                 <div style={{ flex: "1 1 300px" }}>
                                     <h4 style={{ color: "var(--accent-gold)", marginBottom: "0.5rem" }}>Format Overview</h4>
                                     <p style={{ color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                                        Studio-based talk show featuring guest interviews with policy leaders, innovators, creatives, and reformers. We drive conversations that inform, inspire, and mobilize.
+                                        {prog.format || "Information pending."}
                                     </p>
                                 </div>
                                 <div style={{ flex: "1 1 300px" }}>
                                     <h4 style={{ color: "var(--accent-gold)", marginBottom: "0.5rem" }}>Show Personality</h4>
                                     <p style={{ color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                                        Dignified, hopeful, credible, and patriotic without propaganda. The mood is set around authority, prestige, stability and national pride.
+                                        {prog.personality || "Information pending."}
                                     </p>
                                 </div>
                             </div>
 
                             <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", padding: "1.5rem", border: "1px dashed rgba(216, 182, 66, 0.4)", borderRadius: "8px", marginTop: "2rem", backgroundColor: "rgba(216, 182, 66, 0.05)" }}>
-                                <strong>Broadcasting Context:</strong> Aired on a television station by the Nigerian Senate. Carries institutional credibility and national responsibility. Supported across Television, Instagram, TikTok, and YouTube.
+                                <strong>Broadcasting Context:</strong> {prog.context || "Information pending."}
                             </p>
                         </div>
 

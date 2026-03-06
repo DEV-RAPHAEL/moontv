@@ -2,15 +2,24 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "../home.css";
 
-export default function Programs() {
+import { getProgrammes } from "@/lib/api";
+
+export default async function Programs() {
     const categories = ["ALL", "MOVIES & SERIES", "DOCUMENTARIES & FEATURES", "NIGERIAN CLASSICS", "TALK SHOWS"];
-    const programs = [
-        { id: 1, slug: "hello-nigeria", title: "Hello Nigeria", category: "TALK SHOWS", time: "Mon - Fri • 18:00 WAT", image: "/microphone.png", desc: "Flagship show celebrating Nigerian innovation, excellence and leadership across sectors in Nigeria." },
-        { id: 2, slug: "nollywood-nights", title: "Nollywood Nights", category: "MOVIES & SERIES", time: "Saturdays • 20:00 WAT", image: "/program_3.png", desc: "Thrilling and entertaining movies and series showcasing the best of contemporary Nigeria." },
-        { id: 3, slug: "our-heritage", title: "Our Heritage", category: "DOCUMENTARIES & FEATURES", time: "Sundays • 16:00 WAT", image: "/program_1.png", desc: "Documentaries and features celebrating our rich cultural heritage." },
-        { id: 4, slug: "legends-of-the-screen", title: "Legends of the Screen", category: "NIGERIAN CLASSICS", time: "Fridays • 21:00 WAT", image: "/hero_bg.png", desc: "Beloved classics featuring Nigerian icons." },
-        { id: 5, slug: "tech-spotlight", title: "Tech Spotlight", category: "DOCUMENTARIES & FEATURES", time: "Wednesdays • 19:00 WAT", image: "/program_2.png", desc: "Highlighting breakthroughs and innovation." },
-    ];
+
+    // Fetch directly from our new WP API
+    const rawPrograms = await getProgrammes();
+    const programs = rawPrograms.map((p: any) => ({
+        id: p.id,
+        slug: p.slug,
+        title: p.title.rendered,
+        // Optional chaining in case the custom field is somehow empty
+        category: p.advanced_details?.category_badge || "PROGRAMME",
+        time: p.advanced_details?.time || "Time TBD",
+        image: p.featured_image_url || "/mountain.png",
+        // remove html tags from excerpt for a clean description summary
+        desc: p.excerpt.rendered.replace(/<[^>]+>/g, '') || "Watch this amazing programme on Moon TV."
+    }));
 
     return (
         <>
@@ -31,7 +40,12 @@ export default function Programs() {
                         ))}
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "2rem" }}>
-                        {programs.map((prog) => (
+                        {programs.length === 0 && (
+                            <div style={{ padding: "3rem 0", color: "var(--text-secondary)" }}>
+                                No programmes found. Please add them in WordPress!
+                            </div>
+                        )}
+                        {programs.map((prog: any) => (
                             <a href={`/program/${prog.slug}`} key={prog.id} style={{ display: "block" }}>
                                 <div style={{ backgroundColor: "var(--bg-secondary)", borderRadius: "8px", overflow: "hidden", border: "1px solid var(--border-color)", transition: "border-color 0.3s", height: "100%", display: "flex", flexDirection: "column" }}>
                                     <div style={{ width: "100%", height: "200px", position: "relative", backgroundColor: "#0b1a0e" }}>
