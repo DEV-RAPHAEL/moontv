@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { programmes } from '@/lib/programmes';
 
 export default function Footer() {
     return (
@@ -16,9 +17,9 @@ export default function Footer() {
                     <div className="footerLinks">
                         <div className="footerCol">
                             <span className="footerColTitle">Programmes</span>
-                            <Link href="/program/hello-nigeria" className="footerLink">Hello Nigeria</Link>
-                            <Link href="/program/our-heritage" className="footerLink">Cultural Crossroads</Link>
-                            <Link href="/program/tech-spotlight" className="footerLink">Innovations Hub</Link>
+                            {programmes.slice(0, 3).map((programme) => (
+                                <Link href={`/program/${programme.slug}`} className="footerLink" key={programme.slug}>{programme.title}</Link>
+                            ))}
                             <Link href="/programs" className="footerLink">View All</Link>
                         </div>
                         <div className="footerCol">
