@@ -36,7 +36,7 @@ export default function Programs() {
                                         </span>
                                         <h3 style={{ fontSize: "1.3rem", fontWeight: "600", marginBottom: "0.5rem", color: "white" }}>{prog.title}</h3>
                                         <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.5, marginBottom: "1.5rem", flex: 1 }}>{prog.synopsis}</p>
-                                        <div style={{ color: "var(--accent-gold)", fontSize: "0.85rem", fontWeight: "500" }}>Programme Details - Batch 1</div>
+                                        <div style={{ color: "var(--accent-gold)", fontSize: "0.85rem", fontWeight: "500" }}>{prog.category}</div>
                                     </div>
                                 </div>
                             </a>

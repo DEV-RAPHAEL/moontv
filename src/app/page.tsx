@@ -35,15 +35,15 @@ export default function Home() {
           <div className="heroRight animate-fade-right delay-400">
             <div className="statItem">
               <span className="statNumber">{programmes.length}</span>
-              <span className="statLabel">Batch 1 Programmes</span>
+              <span className="statLabel">Original Programmes</span>
             </div>
             <div className="statItem">
-              <span className="statNumber">BATCH 1</span>
-              <span className="statLabel">Programme Details</span>
+              <span className="statNumber">HD</span>
+              <span className="statLabel">Broadcast Quality</span>
             </div>
             <div className="statItem">
-              <span className="statNumber">PNG</span>
-              <span className="statLabel">Series Images</span>
+              <span className="statNumber">24/7</span>
+              <span className="statLabel">Live Streaming</span>
             </div>
           </div>
         </div>
@@ -60,7 +60,7 @@ export default function Home() {
         <div className="container">
           <div className="scheduleHeader">
             <div>
-              <span className="section-subtitle">MOON TV PROGRAM DETAILS - BATCH 1</span>
+              <span className="section-subtitle">MOON TV PROGRAMMES</span>
               <h2 className="section-title" style={{ marginBottom: 0 }}>Featured Programmes</h2>
             </div>
             <Link href="/programs" className="btn btn-outline-gold">View All Programmes</Link>
@@ -82,7 +82,7 @@ export default function Home() {
         <div className="container">
           <div className="helloContainer animate-fade-up delay-200">
             <div className="helloLeft">
-              <span className="section-subtitle">BATCH 1 PROGRAMME</span>
+              <span className="section-subtitle">FEATURED PROGRAMME</span>
               <h2 className="helloTitle">{featuredProgramme.title}</h2>
               <p className="helloDesc">
                 {featuredProgramme.synopsis}
@@ -127,7 +127,7 @@ export default function Home() {
                 <div className="programmeOverlay">
                   <span className="programmeCategory">{programme.category}</span>
                   <h3 className="programmeTitle">{programme.title}</h3>
-                  <div className="programmeTime">Programme Details - Batch 1</div>
+                  <div className="programmeTime">{programme.category}</div>
                 </div>
               </Link>
             ))}

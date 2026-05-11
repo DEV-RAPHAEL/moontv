@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { programmes } from '@/lib/programmes';
 
 export default function Footer() {
@@ -38,7 +39,30 @@ export default function Footer() {
                     </div>
                 </div>
                 <div className="footerBottom">
-                    <div className="bigLogo">MOON TV</div>
+                    <div className="footerBottomContent">
+                        <div className="footerBrand">
+                            <div className="footerLogo">
+                                <Image src="/logo.png" alt="Moon TV Logo" width={32} height={32} className="logoImage" onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    const parent = e.currentTarget.parentElement;
+                                    if (parent) {
+                                        const icon = document.createElement('div');
+                                        icon.className = 'logoIcon';
+                                        icon.innerText = 'M';
+                                        parent.prepend(icon);
+                                    }
+                                }} />
+                                <span>MOON TV</span>
+                            </div>
+                            <p className="footerSlogan">Stories that unite a nation.</p>
+                        </div>
+                        <div className="socialLinks">
+                            <a href="#" className="socialIcon" aria-label="Facebook">FB</a>
+                            <a href="#" className="socialIcon" aria-label="Twitter">TW</a>
+                            <a href="#" className="socialIcon" aria-label="Instagram">IG</a>
+                            <a href="#" className="socialIcon" aria-label="LinkedIn">LI</a>
+                        </div>
+                    </div>
                     <p className="copyright">© 2026 moontvonline.com. All rights reserved.</p>
                 </div>
             </div>

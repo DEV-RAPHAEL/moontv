@@ -478,40 +478,6 @@ export const programmes: Programme[] = [
     personality:
       "Vibrant, uplifting, inclusive, energetic, fun, encouraging, and focused on growth rather than competition.",
   },
-  {
-    id: 14,
-    slug: "mothers-world",
-    title: "Mothers World",
-    category: "LIFESTYLE AND WELLNESS PROGRAM",
-    image: `${batchRoot}/Mothers World/Mothers World Images/Mothers World - Image 1.png`,
-    gallery: [
-      `/Moon TV Program Details - Batch 1/Mothers World/Mothers World Images/Mothers World - Image 1.png`,
-      `/Moon TV Program Details - Batch 1/Mothers World/Mothers World Images/Mothers World - Image 2.png`,
-      `/Moon TV Program Details - Batch 1/Mothers World/Mothers World Images/Mothers World - Image 3.png`,
-      `/Moon TV Program Details - Batch 1/Mothers World/Mothers World Images/Mothers World - Image 4.png`,
-      `/Moon TV Program Details - Batch 1/Mothers World/Mothers World Images/Mothers World - Image 5.png`,
-      `/Moon TV Program Details - Batch 1/Mothers World/Mothers World Images/Mothers World - Image 6.png`,
-    ],
-    synopsis:
-      "A guide to motherhood, bonding with children, healthy diets, and healthy living through segments on meals and maternal wellness.",
-    identity:
-      "A lifestyle and wellness program supporting mothers through nutrition, motherhood guidance, emotional support, and practical family health advice.",
-    purpose: [
-      "Empower mothers with knowledge and confidence.",
-      "Promote healthy eating habits for families.",
-      "Provide reliable guidance on pre- and postnatal care.",
-      "Encourage balanced lifestyles that support physical and mental health.",
-    ],
-    audience: [
-      "Ages 18-85",
-      "Expecting mothers, new mothers, and mothers with young children",
-      "Health-conscious families",
-      "Modern mothers seeking balance between caregiving and personal wellness",
-    ],
-    format:
-      "A practical format built around Healthy Meals and Motherhood segments, combining recipe demonstrations with expert-led maternal and parenting discussions.",
-    personality:
-      "Warm, nurturing, reassuring, supportive, empathetic, judgment-free, and focused on real-life solutions.",
   },
 ];
 

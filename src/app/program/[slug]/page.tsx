@@ -32,7 +32,7 @@ export default async function ProgramDetail({ params }: { params: Promise<{ slug
                                 {prog.category}
                             </span>
                             <h1 style={{ fontSize: "4.5rem", fontWeight: "700", marginBottom: "0.5rem", letterSpacing: "-1px" }}>{prog.title}</h1>
-                            <div style={{ color: "var(--accent-gold)", fontSize: "1.2rem", fontWeight: "500" }}>Programme Details - Batch 1</div>
+                            <div style={{ color: "var(--accent-gold)", fontSize: "1.2rem", fontWeight: "500" }}>{programme.category}</div>
                         </div>
                     </div>
 
