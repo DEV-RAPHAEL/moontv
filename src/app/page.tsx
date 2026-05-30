@@ -35,12 +35,14 @@ export default function Home() {
     }
   }, []);
 
-  const toggleFavorite = (slug: string, title: string) => {
-    if (!localStorage.getItem('moon_user')) {
+  const toggleFavorite = async (slug: string, title: string) => {
+    const session = localStorage.getItem('moon_user');
+    if (!session) {
       alert('Please Sign In first to add programmes to your EPG favorites list.');
       return;
     }
 
+    const { email } = JSON.parse(session);
     let updated: string[];
     if (favorites.includes(slug)) {
       updated = favorites.filter(s => s !== slug);
@@ -54,6 +56,16 @@ export default function Home() {
     }
     setFavorites(updated);
     localStorage.setItem('moon_favorites', JSON.stringify(updated));
+
+    try {
+      await fetch('/api/favorites/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, favorites: updated })
+      });
+    } catch (e) {
+      console.error('Failed to sync favorites with backend:', e);
+    }
   };
 
   const featuredProgramme = programmes[0];
