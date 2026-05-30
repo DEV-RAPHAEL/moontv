@@ -1,4 +1,18 @@
 {
-  "users": [],
-  "favorites": []
+  "users": [
+    {
+      "id": "1780155975279",
+      "username": "Dev Raph",
+      "email": "uniqueinternet2020@gmail.com",
+      "password": "Amalgamate1999@"
+    }
+  ],
+  "favorites": [
+    {
+      "userEmail": "uniqueinternet2020@gmail.com",
+      "slugs": [
+        "hello-nigeria"
+      ]
+    }
+  ]
 }
