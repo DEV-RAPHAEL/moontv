@@ -259,6 +259,24 @@ export const programmes: Programme[] = [
       "A top-tier entertainment platform for kids under 16, giving young people a global stage to express themselves and showcase their abilities.",
     notableCast: [],
   },
+  {
+    id: 14,
+    slug: "mothers-world",
+    title: "Mother's World",
+    category: "LIFESTYLE AND WELLNESS PROGRAM",
+    image: `${batchRoot}/Mothers World/Mothers World Images/Mothers World - Image 1.png`,
+    gallery: [
+      `/Moon TV Program Details - Batch 1/Mothers World/Mothers World Images/Mothers World - Image 1.png`,
+      `/Moon TV Program Details - Batch 1/Mothers World/Mothers World Images/Mothers World - Image 2.png`,
+      `/Moon TV Program Details - Batch 1/Mothers World/Mothers World Images/Mothers World - Image 3.png`,
+      `/Moon TV Program Details - Batch 1/Mothers World/Mothers World Images/Mothers World - Image 4.png`,
+      `/Moon TV Program Details - Batch 1/Mothers World/Mothers World Images/Mothers World - Image 5.png`,
+      `/Moon TV Program Details - Batch 1/Mothers World/Mothers World Images/Mothers World - Image 6.png`,
+    ],
+    synopsis:
+      "Mother's World guides viewers on motherhood and bonds with child and healthy living through healthy diets and living. Includes Healthy Meals, our flagship cooking segment, and expert interactive discussions on parenting and pre/post maternal concerns.",
+    notableCast: [],
+  },
 ];
 
 export const programmeCategories = [
