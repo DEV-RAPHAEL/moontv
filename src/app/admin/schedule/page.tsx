@@ -56,7 +56,7 @@ export default function BroadcastSchedule() {
                     <div style={{ display: "grid", gridTemplateColumns: "150px repeat(7, 1fr)", gap: "0.75rem", marginBottom: "1rem" }}>
                         <div style={{ fontWeight: "700", fontSize: "0.85rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Time Slots</div>
                         {days.map(day => (
-                            <div key={day} style={{ fontWeight: "700", fontSize: "0.85rem", color: "white", textTransform: "uppercase", letterSpacing: "0.5px", textAlign: "center", borderBottom: "2px solid var(--border-color)", pb: "0.5rem" }}>
+                            <div key={day} style={{ fontWeight: "700", fontSize: "0.85rem", color: "white", textTransform: "uppercase", letterSpacing: "0.5px", textAlign: "center", borderBottom: "2px solid var(--border-color)", paddingBottom: "0.5rem" }}>
                                 {day.substring(0, 3)}
                             </div>
                         ))}

@@ -28,6 +28,9 @@ export default function Footer() {
                             <Link href="/about" className="footerLink">About Us</Link>
                             <Link href="/advertise" className="footerLink">Advertise with us</Link>
                             <Link href="/contact" className="footerLink">Contact Form</Link>
+                            <Link href="/admin" className="footerLink" style={{ color: "var(--accent-gold)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                                Admin Portal 🔒
+                            </Link>
                         </div>
                         <div className="footerCol">
                             <span className="footerColTitle">Subscribe</span>

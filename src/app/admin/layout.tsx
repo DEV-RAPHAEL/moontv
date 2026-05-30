@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <Link
                         href="/"
                         className="sidebarMenuItem"
-                        style={{ marginTop: "auto", borderTop: "1px solid var(--border-color)", pt: "1.5rem", borderRadius: 0 }}
+                        style={{ marginTop: "auto", borderTop: "1px solid var(--border-color)", paddingTop: "1.5rem", borderRadius: 0 }}
                     >
                         <span>🏠</span>
                         <span>Back to Website</span>
