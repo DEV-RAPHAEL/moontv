@@ -6,17 +6,7 @@ export default function Header({ isInner = false }: { isInner?: boolean }) {
         <header className="header" style={isInner ? { position: 'relative', backgroundColor: 'var(--bg-primary)' } : {}}>
             <div className="container headerInner">
                 <Link href="/" className="logo">
-                    <Image src="/logo.png" alt="Moon TV Logo" width={40} height={40} className="logoImage" onError={(e) => {
-                        // Fallback if logo.png doesn't exist yet
-                        e.currentTarget.style.display = 'none';
-                        const parent = e.currentTarget.parentElement;
-                        if (parent) {
-                            const icon = document.createElement('div');
-                            icon.className = 'logoIcon';
-                            icon.innerText = 'M';
-                            parent.prepend(icon);
-                        }
-                    }} />
+                    <Image src="/logo.png" alt="Moon TV Logo" width={40} height={40} className="logoImage" />
                     <span>MOON TV</span>
                 </Link>
                 <nav className="nav">

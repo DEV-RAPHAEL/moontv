@@ -87,15 +87,23 @@ export default function Home() {
               <p className="helloDesc">
                 {featuredProgramme.synopsis}
               </p>
-              <div className="helloGrid">
-                {featuredProgramme.purpose.slice(0, 4).map((f, i) => (
-                  <div className="helloFeature" key={i}>
-                    <div className="featureIcon">✓</div>
-                    <div className="featureTitle">Show Purpose</div>
-                    <div className="featureDesc">{f}</div>
-                  </div>
-                ))}
-              </div>
+              {featuredProgramme.notableCast.length > 0 && (
+                <div className="helloGrid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginTop: '1.5rem', marginBottom: '2rem' }}>
+                  {featuredProgramme.notableCast.map((castMember, i) => (
+                    <div className="helloFeature" key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'center', backgroundColor: 'var(--bg-secondary)', padding: '0.8rem 1.2rem', borderRadius: '8px', border: '1px solid var(--border-color)', margin: 0 }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(216, 182, 66, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', fontSize: '1rem', fontWeight: 'bold', flexShrink: 0 }}>
+                        {castMember.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div style={{ textAlign: 'left' }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '600' }}>
+                          {featuredProgramme.category.includes("TALK") || featuredProgramme.category.includes("CULINARY") || featuredProgramme.category.includes("AVIATION") || featuredProgramme.category.includes("HEALTH") ? "Host" : "Starring"}
+                        </div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: '600', color: 'white', marginTop: '2px' }}>{castMember}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div>
                 <Link href={`/program/${featuredProgramme.slug}`} className="btn btn-outline-gold">View Show Details →</Link>
               </div>

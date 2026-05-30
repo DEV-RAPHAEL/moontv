@@ -42,16 +42,7 @@ export default function Footer() {
                     <div className="footerBottomContent">
                         <div className="footerBrand">
                             <div className="footerLogo">
-                                <Image src="/logo.png" alt="Moon TV Logo" width={32} height={32} className="logoImage" onError={(e) => {
-                                    e.currentTarget.style.display = 'none';
-                                    const parent = e.currentTarget.parentElement;
-                                    if (parent) {
-                                        const icon = document.createElement('div');
-                                        icon.className = 'logoIcon';
-                                        icon.innerText = 'M';
-                                        parent.prepend(icon);
-                                    }
-                                }} />
+                                <Image src="/logo.png" alt="Moon TV Logo" width={32} height={32} className="logoImage" />
                                 <span>MOON TV</span>
                             </div>
                             <p className="footerSlogan">Stories that unite a nation.</p>
