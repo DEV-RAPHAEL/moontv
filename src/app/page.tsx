@@ -1,3 +1,6 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Image from "next/image";
 import Link from "next/link";
 import "./home.css";
@@ -6,11 +9,89 @@ import Footer from "@/components/Footer";
 import { programmes } from "@/lib/programmes";
 
 export default function Home() {
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [showNotification, setShowNotification] = useState<string | null>(null);
+  const [user, setUser] = useState<{ username: string } | null>(null);
+
+  useEffect(() => {
+    // Load favorites from local storage
+    const storedFavs = localStorage.getItem('moon_favorites');
+    if (storedFavs) {
+      try {
+        setFavorites(JSON.parse(storedFavs));
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // Check user session
+    const storedUser = localStorage.getItem('moon_user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, []);
+
+  const toggleFavorite = (slug: string, title: string) => {
+    if (!localStorage.getItem('moon_user')) {
+      alert('Please Sign In first to add programmes to your EPG favorites list.');
+      return;
+    }
+
+    let updated: string[];
+    if (favorites.includes(slug)) {
+      updated = favorites.filter(s => s !== slug);
+    } else {
+      updated = [...favorites, slug];
+      // Trigger a beautiful live simulated EPG reminder notification!
+      setShowNotification(`🔔 REMINDER: "${title}" is now LIVE on Moon TV!`);
+      setTimeout(() => {
+        setShowNotification(null);
+      }, 5000);
+    }
+    setFavorites(updated);
+    localStorage.setItem('moon_favorites', JSON.stringify(updated));
+  };
+
   const featuredProgramme = programmes[0];
+  const favoriteProgrammes = programmes.filter(p => favorites.includes(p.slug));
 
   return (
-    <main>
+    <main style={{ position: 'relative' }}>
       <Header />
+
+      {/* Floating EPG Notification Alert Toast */}
+      {showNotification && (
+        <div style={{
+          position: 'fixed',
+          top: '90px',
+          right: '20px',
+          backgroundColor: '#1a5c2b',
+          border: '1.5px solid var(--accent-gold)',
+          borderRadius: '10px',
+          padding: '1rem 1.5rem',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+          color: 'white',
+          fontWeight: 'bold',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.8rem',
+          animation: 'slideIn 0.3s ease-out'
+        }}>
+          <span style={{ fontSize: '1.2rem' }}>📺</span>
+          <span>{showNotification}</span>
+          <button 
+            onClick={() => setShowNotification(null)} 
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontWeight: 'bold', marginLeft: '1rem' }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <section className="hero">
         <div className="heroBackground animate-scale-in">
@@ -49,6 +130,36 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 2. My Favorite EPG Channels / Shows Section */}
+      {favoriteProgrammes.length > 0 && (
+        <section className="scheduleSection" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(26,92,43,0.02)' }}>
+          <div className="container">
+            <div className="scheduleHeader">
+              <div>
+                <span className="section-subtitle">YOUR FAVORITES</span>
+                <h2 className="section-title" style={{ marginBottom: 0 }}>My Favorited EPG Shows</h2>
+              </div>
+            </div>
+            <div className="scheduleGrid">
+              {favoriteProgrammes.map((programme) => (
+                <div className="scheduleCard" key={programme.slug} style={{ position: 'relative' }}>
+                  <button 
+                    onClick={() => toggleFavorite(programme.slug, programme.title)} 
+                    style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', zIndex: 10 }}
+                  >
+                    ❤️
+                  </button>
+                  <div className="cardTime">{programme.category}</div>
+                  <h3 className="cardTitle">{programme.title}</h3>
+                  <p className="cardDesc">{programme.synopsis}</p>
+                  <Link href={`/program/${programme.slug}`} className="btn btn-outline-green" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}>View Details</Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="playerSection animate-fade-up delay-300">
         <div className="playerContainer">
           <Image src={featuredProgramme.image} alt={featuredProgramme.title} fill style={{ objectFit: "cover" }} />
@@ -66,14 +177,23 @@ export default function Home() {
             <Link href="/programs" className="btn btn-outline-gold">View All Programmes</Link>
           </div>
           <div className="scheduleGrid">
-            {programmes.slice(0, 4).map((programme) => (
-              <div className="scheduleCard" key={programme.slug}>
-                <div className="cardTime">{programme.category}</div>
-                <h3 className="cardTitle">{programme.title}</h3>
-                <p className="cardDesc">{programme.synopsis}</p>
-                <Link href={`/program/${programme.slug}`} className="btn btn-outline-green" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}>View Details</Link>
-              </div>
-            ))}
+            {programmes.slice(0, 4).map((programme) => {
+              const isFav = favorites.includes(programme.slug);
+              return (
+                <div className="scheduleCard" key={programme.slug} style={{ position: 'relative' }}>
+                  <button 
+                    onClick={() => toggleFavorite(programme.slug, programme.title)} 
+                    style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', zIndex: 10, outline: 'none' }}
+                  >
+                    {isFav ? '❤️' : '🤍'}
+                  </button>
+                  <div className="cardTime">{programme.category}</div>
+                  <h3 className="cardTitle">{programme.title}</h3>
+                  <p className="cardDesc">{programme.synopsis}</p>
+                  <Link href={`/program/${programme.slug}`} className="btn btn-outline-green" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}>View Details</Link>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
