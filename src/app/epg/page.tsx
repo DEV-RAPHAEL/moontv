@@ -42,9 +42,9 @@ export default function EPG() {
         : rawSlots.map(s => ({ ...s, isNowPlaying: false }));
 
     const getProgrammeImage = (slug?: string) => {
-        if (!slug) return "/hero_bg.jpg";
+        if (!slug) return undefined;
         const found = programmes.find(p => p.slug === slug);
-        return found ? found.image : "/hero_bg.jpg";
+        return found ? found.image : undefined;
     };
 
     return (
@@ -151,15 +151,25 @@ export default function EPG() {
                                     <div style={{
                                         width: "80px",
                                         height: "60px",
-                                        position: "relative",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
                                         borderRadius: "6px",
                                         overflow: "hidden",
                                         flexShrink: 0,
                                         border: "1px solid var(--border-color)",
-                                        backgroundColor: "#050b07"
+                                        backgroundColor: "#050b07",
+                                        color: "var(--text-secondary)",
+                                        fontSize: "0.75rem",
+                                        textAlign: "center",
+                                        padding: "0.25rem"
                                     }}>
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={getProgrammeImage(slot.slug)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                        {getProgrammeImage(slot.slug) ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img src={getProgrammeImage(slot.slug)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                        ) : (
+                                            <span>No Images</span>
+                                        )}
                                     </div>
 
                                     <div>

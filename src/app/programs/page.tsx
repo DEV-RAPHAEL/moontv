@@ -1,9 +1,22 @@
+'use client';
+
+import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { programmeCategories, programmes } from "@/lib/programmes";
 import "../home.css";
 
 export default function Programs() {
+    const [activeCategory, setActiveCategory] = useState(programmeCategories[0]);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const filteredProgrammes = programmes.filter((prog) => {
+        const matchesCategory = activeCategory === "ALL" || prog.category === activeCategory;
+        const matchesSearch = prog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            prog.synopsis.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesCategory && matchesSearch;
+    });
+
     return (
         <>
             <Header isInner={true} />
@@ -15,9 +28,34 @@ export default function Programs() {
                     <p style={{ color: "var(--text-secondary)", marginBottom: "3rem", maxWidth: "600px", fontSize: "1.1rem" }}>
                         From beloved classics to thrilling contemporary series, explore content that reflects our pride, dignity, and cultural richness.
                     </p>
-                    <div style={{ display: "flex", gap: "1rem", marginBottom: "3rem", flexWrap: "wrap" }}>
-                        {programmeCategories.map((cat, idx) => (
-                            <button key={idx} className={idx === 0 ? "btn btn-green" : "btn btn-outline-gold"} style={{ padding: "0.5rem 1rem", fontSize: "0.8rem" }}>
+                    <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem", flexWrap: "wrap", alignItems: "center" }}>
+                        <input
+                            type="text"
+                            placeholder="Search programmes..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{
+                                flex: "1",
+                                minWidth: "240px",
+                                padding: "0.85rem 1rem",
+                                borderRadius: "8px",
+                                border: "1px solid var(--border-color)",
+                                backgroundColor: "var(--bg-secondary)",
+                                color: "white"
+                            }}
+                        />
+                        <span style={{ color: "var(--text-secondary)", fontSize: "0.95rem", whiteSpace: "nowrap" }}>
+                            Showing {filteredProgrammes.length} of {programmes.length} programmes
+                        </span>
+                    </div>
+                    <div style={{ display: "flex", gap: "0.75rem", marginBottom: "3rem", flexWrap: "wrap" }}>
+                        {programmeCategories.map((cat) => (
+                            <button
+                                key={cat}
+                                onClick={() => setActiveCategory(cat)}
+                                className={activeCategory === cat ? "btn btn-green" : "btn btn-outline-gold"}
+                                style={{ padding: "0.5rem 1rem", fontSize: "0.8rem" }}
+                            >
                                 {cat}
                             </button>
                         ))}
