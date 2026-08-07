@@ -28,40 +28,59 @@ export default function Programs() {
                     <p style={{ color: "var(--text-secondary)", marginBottom: "3rem", maxWidth: "600px", fontSize: "1.1rem" }}>
                         From beloved classics to thrilling contemporary series, explore content that reflects our pride, dignity, and cultural richness.
                     </p>
-                    <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem", flexWrap: "wrap", alignItems: "center" }}>
-                        <input
-                            type="text"
-                            placeholder="Search programmes..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            style={{
-                                flex: "1",
-                                minWidth: "240px",
-                                padding: "0.85rem 1rem",
-                                borderRadius: "8px",
-                                border: "1px solid var(--border-color)",
-                                backgroundColor: "var(--bg-secondary)",
-                                color: "white"
-                            }}
-                        />
+                    <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", flexWrap: "wrap", alignItems: "flex-end" }}>
+                        <div style={{ flex: "1 1 320px", minWidth: "240px" }}>
+                            <label htmlFor="searchProgrammes" style={{ display: "block", color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "0.5rem", fontWeight: 600 }}>
+                                Search programmes
+                            </label>
+                            <input
+                                id="searchProgrammes"
+                                type="text"
+                                placeholder="Search programmes..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{
+                                    width: "100%",
+                                    padding: "0.95rem 1rem",
+                                    borderRadius: "12px",
+                                    border: "1px solid var(--border-color)",
+                                    backgroundColor: "var(--bg-secondary)",
+                                    color: "white"
+                                }}
+                            />
+                        </div>
+                        <div style={{ minWidth: "240px", width: "240px" }}>
+                            <label htmlFor="categoryFilter" style={{ display: "block", color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "0.5rem", fontWeight: 600 }}>
+                                Category
+                            </label>
+                            <select
+                                id="categoryFilter"
+                                value={activeCategory}
+                                onChange={(e) => setActiveCategory(e.target.value)}
+                                style={{
+                                    width: "100%",
+                                    padding: "0.95rem 1rem",
+                                    borderRadius: "12px",
+                                    border: "1px solid var(--border-color)",
+                                    backgroundColor: "var(--bg-secondary)",
+                                    color: "white"
+                                }}
+                            >
+                                {programmeCategories.map((cat) => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        </div>
                         <span style={{ color: "var(--text-secondary)", fontSize: "0.95rem", whiteSpace: "nowrap" }}>
                             Showing {filteredProgrammes.length} of {programmes.length} programmes
                         </span>
                     </div>
-                    <div style={{ display: "flex", gap: "0.75rem", marginBottom: "3rem", flexWrap: "wrap" }}>
-                        {programmeCategories.map((cat) => (
-                            <button
-                                key={cat}
-                                onClick={() => setActiveCategory(cat)}
-                                className={activeCategory === cat ? "btn btn-green" : "btn btn-outline-gold"}
-                                style={{ padding: "0.5rem 1rem", fontSize: "0.8rem" }}
-                            >
-                                {cat}
-                            </button>
-                        ))}
-                    </div>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "2rem" }}>
-                        {programmes.map((prog) => (
+                        {filteredProgrammes.length === 0 ? (
+                            <div style={{ gridColumn: "1 / -1", padding: "3rem 1.5rem", borderRadius: "12px", backgroundColor: "var(--bg-secondary)", border: "1px solid var(--border-color)", color: "var(--text-secondary)", textAlign: "center" }}>
+                                No programmes match your search or selected category.
+                            </div>
+                        ) : filteredProgrammes.map((prog) => (
                             <a href={`/program/${prog.slug}`} key={prog.id} style={{ display: "block" }}>
                                 <div style={{ backgroundColor: "var(--bg-secondary)", borderRadius: "8px", overflow: "hidden", border: "1px solid var(--border-color)", transition: "border-color 0.3s", height: "100%", display: "flex", flexDirection: "column" }}>
                                     <div style={{ width: "100%", height: "200px", position: "relative", backgroundColor: "#0b1a0e" }}>
