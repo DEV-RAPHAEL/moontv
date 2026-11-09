@@ -7,6 +7,7 @@ import "./home.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NoContent from "@/components/NoContent";
+import WatchLiveButton from "@/components/WatchLiveButton";
 import type { Programme } from "@/lib/programmes";
 import type { ScheduleSlot } from "@/lib/schedule";
 
@@ -82,7 +83,7 @@ export default function Home() {
               Moon TV is a cultural and unity-driven television network dedicated to reshaping Nigeria&apos;s narrative. We showcase authentic stories, celebrate diversity and spotlight the nation&apos;s talent and potential.
             </p>
             <div className="heroButtons animate-fade-up delay-500">
-              <button className="btn btn-green">Watch Live on Web</button>
+              <WatchLiveButton label="Watch Live on Web" />
               <Link href="/epg" className="btn btn-outline-gold">View Weekly Schedule</Link>
             </div>
           </div>

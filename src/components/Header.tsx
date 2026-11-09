@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import WatchLiveButton from "./WatchLiveButton";
 
 export default function Header({ isInner = false }: { isInner?: boolean }) {
     return (
@@ -17,7 +18,7 @@ export default function Header({ isInner = false }: { isInner?: boolean }) {
                     <Link href="/contact" className="navLink">Contact</Link>
                 </nav>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <button className="btn btn-green">Watch Live</button>
+                    <WatchLiveButton />
                 </div>
             </div>
         </header>
