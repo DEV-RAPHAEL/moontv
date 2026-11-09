@@ -1,3 +1,6 @@
+import { allProgrammeSlugsQuery, allProgrammesQuery, programmeBySlugQuery } from './queries';
+import { sanityFetch, urlForImage } from './sanity';
+
 export type Programme = {
   id: number;
   slug: string;
@@ -7,557 +10,62 @@ export type Programme = {
   gallery: string[];
   synopsis: string;
   notableCast: string[];
+  isFeatured: boolean;
+  description: unknown[];
 };
 
-const batchRoot = "/Moon TV Program Details - Batch 1";
+type SanityProgramme = {
+  title?: string | null;
+  slug?: { current?: string | null } | null;
+  summary?: string | null;
+  description?: unknown[] | null;
+  thumbnail?: Parameters<typeof urlForImage>[0] | null;
+  category?: string | null;
+  hosts?: string[] | null;
+  isFeatured?: boolean | null;
+};
 
-export const programmes: Programme[] = [
-  {
-    id: 1,
-    slug: "down-town",
-    title: "Down Town",
-    category: "DRAMA SERIES",
-    image: `${batchRoot}/Down Town/Down Town Images/Down Town - Image 1.png`,
-    gallery: [
-      `${batchRoot}/Down Town/Down Town Images/Down Town - Image 1.png`,
-      `${batchRoot}/Down Town/Down Town Images/Down Town - Image 2.png`,
-      `${batchRoot}/Down Town/Down Town Images/Down Town - Image 3.png`,
-      `${batchRoot}/Down Town/Down Town Images/Down Town - Image 4.png`,
-      `${batchRoot}/Down Town/Down Town Images/Down Town - Image 5.png`,
-      `${batchRoot}/Down Town/Down Town Images/Down Town - Image 6.png`,
-      `${batchRoot}/Down Town/Down Town Images/Down Town - Image 7.png`,
-      `${batchRoot}/Down Town/Down Town Images/Down Town - Image 8.png`,
-    ],
-    synopsis:
-      "Down Town is a vibrant, character-driven drama series with strong comedic undertones. It centers on Sir and Ma Brainard, an unconventional couple in their sixties who fully embody the lifestyle, language, fashion, and energy of people decades younger.",
-    notableCast: ["Sir Brainard", "Ma Brainard"],
-  },
-  {
-    id: 2,
-    slug: "kilanse",
-    title: "Kilanse",
-    category: "CULINARY LIFESTYLE SHOW",
-    image: `${batchRoot}/Kilanse/Kilanse - Images/Kilanse - Image 1.png`,
-    gallery: [
-      `${batchRoot}/Kilanse/Kilanse - Images/Kilanse - Image 1.png`,
-      `${batchRoot}/Kilanse/Kilanse - Images/Kilanse - Image 2.png`,
-      `${batchRoot}/Kilanse/Kilanse - Images/Kilanse - Image 3.png`,
-      `${batchRoot}/Kilanse/Kilanse - Images/Kilanse - Image 4.png`,
-      `${batchRoot}/Kilanse/Kilanse - Images/Kilanse - Image 5.png`,
-      `${batchRoot}/Kilanse/Kilanse - Images/Kilanse - Image 6.png`,
-      `${batchRoot}/Kilanse/Kilanse - Images/Kilanse - Image 7.png`,
-      `${batchRoot}/Kilanse/Kilanse - Images/Kilanse - Image 8.png`,
-    ],
-    synopsis:
-      "Kilanse is a culturally rich culinary lifestyle show built on storytelling through food. Each episode takes viewers on a vibrant culinary journey through the rich, diverse cuisine of Nigeria and beyond, celebrating heritage and recipe origins.",
-    notableCast: [],
-  },
-  {
-    id: 3,
-    slug: "tomorrow-is-now",
-    title: "Tomorrow Is Now",
-    category: "FAMILY DRAMA SERIES",
-    image: `${batchRoot}/Tomorrow is Now - Season 1/Tomorrow is Now - Images/Tomorrow is Now - Image 1.png`,
-    gallery: [
-      `${batchRoot}/Tomorrow is Now - Season 1/Tomorrow is Now - Images/Tomorrow is Now - Image 1.png`,
-      `${batchRoot}/Tomorrow is Now - Season 1/Tomorrow is Now - Images/Tomorrow is Now - Image 2.png`,
-      `${batchRoot}/Tomorrow is Now - Season 1/Tomorrow is Now - Images/Tomorrow is Now - Image 3.png`,
-      `${batchRoot}/Tomorrow is Now - Season 1/Tomorrow is Now - Images/Tomorrow is Now - Image 4.png`,
-      `${batchRoot}/Tomorrow is Now - Season 1/Tomorrow is Now - Images/Tomorrow is Now - Image 5.png`,
-      `${batchRoot}/Tomorrow is Now - Season 1/Tomorrow is Now - Images/Tomorrow is Now - Image 6.png`,
-      `${batchRoot}/Tomorrow is Now - Season 1/Tomorrow is Now - Images/Tomorrow is Now - Image 7.png`,
-      `${batchRoot}/Tomorrow is Now - Season 1/Tomorrow is Now - Images/Tomorrow is Now - Image 8.png`,
-    ],
-    synopsis:
-      "An entertaining, educative, and mind-pulsating half-hour family drama series produced to address moral decadence among youth and adults, highlighting relatable everyday family dynamics and social values.",
-    notableCast: [],
-  },
-  {
-    id: 4,
-    slug: "in-my-closet",
-    title: "In My Closet",
-    category: "ANTHOLOGY DRAMA SERIES",
-    image: `${batchRoot}/In My Closet/In My Closet - Heart/Heart - Images/Hearts - Image 1.png`,
-    gallery: [
-      `${batchRoot}/In My Closet/In My Closet - Heart/Heart - Images/Hearts - Image 1.png`,
-      `${batchRoot}/In My Closet/In My Closet - Heart/Heart - Images/Hearts - Image 2.png`,
-      `${batchRoot}/In My Closet/In My Closet - Heart/Heart - Images/Hearts - Image 3.png`,
-      `${batchRoot}/In My Closet/In My Closet - Heart/Heart - Images/Hearts - Image 4.png`,
-      `${batchRoot}/In My Closet/In My Closet - Heart/Heart - Images/Hearts - Image 5.png`,
-      `${batchRoot}/In My Closet/In My Closet - Heart/Heart - Images/Hearts - Image 6.png`,
-      `${batchRoot}/In My Closet/In My Closet - Heart/Heart - Images/Hearts - Image 7.png`,
-      `${batchRoot}/In My Closet/In My Closet - The Unveiling/The Unveiling - Images/The Unveiling - Image 1.png`,
-      `${batchRoot}/In My Closet/In My Closet - The Unveiling/The Unveiling - Images/The Unveiling - Image 2.png`,
-      `${batchRoot}/In My Closet/In My Closet - The Unveiling/The Unveiling - Images/The Unveiling - Image 3.png`,
-      `${batchRoot}/In My Closet/In My Closet - The Unveiling/The Unveiling - Images/The Unveiling - Image 4.png`,
-      `${batchRoot}/In My Closet/In My Closet - The Unveiling/The Unveiling - Images/The Unveiling - Image 5.png`,
-    ],
-    synopsis:
-      "An anthology-style drama series presenting a collection of short stories centered around family, love, betrayal, perseverance, power, and ambition. The current story 'The Brief' follows two competing advertising developers navigating love and workplace competition.",
-    notableCast: ["Flora", "Jason", "Segun", "Chief Maxwell"],
-  },
-  {
-    id: 5,
-    slug: "family-heritage",
-    title: "Family Heritage",
-    category: "FAMILY DRAMA SERIES",
-    image: `${batchRoot}/Family Heritage/Family Heritage Images/Family Heritage - Image 1.png`,
-    gallery: [
-      `${batchRoot}/Family Heritage/Family Heritage Images/Family Heritage - Image 1.png`,
-      `${batchRoot}/Family Heritage/Family Heritage Images/Family Heritage - Image 2.png`,
-      `${batchRoot}/Family Heritage/Family Heritage Images/Family Heritage - Image 3.png`,
-      `${batchRoot}/Family Heritage/Family Heritage Images/Family Heritage - Image 4.png`,
-      `${batchRoot}/Family Heritage/Family Heritage Images/Family Heritage - Image 5.png`,
-      `${batchRoot}/Family Heritage/Family Heritage Images/Family Heritage - Image 6.png`,
-    ],
-    synopsis:
-      "A compelling Nigerian family drama series centered on love gone sour, socioeconomic class differences, frustration, and power struggles over inheritance and family legacy.",
-    notableCast: [],
-  },
-  {
-    id: 6,
-    slug: "home-affairs-culinary-show",
-    title: "Home Affairs Culinary Show",
-    category: "FOOD & LIFESTYLE SHOW",
-    image: `${batchRoot}/Home Affairs Culinary Show/Home Affairs Culinary Show Images/Home Affairs Culinary Show - Image 1.png`,
-    gallery: [
-      `${batchRoot}/Home Affairs Culinary Show/Home Affairs Culinary Show Images/Home Affairs Culinary Show - Image 1.png`,
-      `${batchRoot}/Home Affairs Culinary Show/Home Affairs Culinary Show Images/Home Affairs Culinary Show - Image 2.png`,
-      `${batchRoot}/Home Affairs Culinary Show/Home Affairs Culinary Show Images/Home Affairs Culinary Show - Image 3.png`,
-      `${batchRoot}/Home Affairs Culinary Show/Home Affairs Culinary Show Images/Home Affairs Culinary Show - Image 4.png`,
-      `${batchRoot}/Home Affairs Culinary Show/Home Affairs Culinary Show Images/Home Affairs Culinary Show - Image 5.png`,
-    ],
-    synopsis:
-      "A vibrant food and lifestyle television program that celebrates local and international dishes across various states in Nigeria, showcasing culinary traditions, cooking techniques, and cultural stories.",
-    notableCast: [],
-  },
-  {
-    id: 7,
-    slug: "aviation-insights",
-    title: "Aviation Insights",
-    category: "STUDIO TALK SHOW",
-    image: `${batchRoot}/Aviation Insight/Aviation Insight Images/Aviation Insights - Image 1.png`,
-    gallery: [
-      `${batchRoot}/Aviation Insight/Aviation Insight Images/Aviation Insights - Image 1.png`,
-      `${batchRoot}/Aviation Insight/Aviation Insight Images/Aviation Insights - Image 2.png`,
-      `${batchRoot}/Aviation Insight/Aviation Insight Images/Aviation Insights - Image 3.png`,
-      `${batchRoot}/Aviation Insight/Aviation Insight Images/Aviation Insights - Image 4.png`,
-      `${batchRoot}/Aviation Insight/Aviation Insight Images/Aviation Insights - Image 5.png`,
-    ],
-    synopsis:
-      "An engaging studio-based program exploring the aviation industry in Nigeria and beyond through expert interviews, policy analysis, airport infrastructure updates, and industry insights.",
-    notableCast: [],
-  },
-  {
-    id: 8,
-    slug: "breakfast-hub",
-    title: "Breakfast Hub",
-    category: "TALK PROGRAM",
-    image: `${batchRoot}/Breakfast Hub/Breakfast Hub Images/Breakfast Hub - Image 1.png`,
-    gallery: [
-      `${batchRoot}/Breakfast Hub/Breakfast Hub Images/Breakfast Hub - Image 1.png`,
-      `${batchRoot}/Breakfast Hub/Breakfast Hub Images/Breakfast Hub - Image 2.png`,
-      `${batchRoot}/Breakfast Hub/Breakfast Hub Images/Breakfast Hub - Image 3.png`,
-      `${batchRoot}/Breakfast Hub/Breakfast Hub Images/Breakfast Hub - Image 4.png`,
-      `${batchRoot}/Breakfast Hub/Breakfast Hub Images/Breakfast Hub - Image 5.png`,
-    ],
-    synopsis:
-      "A dynamic talk program where three engaging presenters dissect topical issues across Aviation, Tourism, and Travel in a relaxed breakfast-table atmosphere.",
-    notableCast: [],
-  },
-  {
-    id: 9,
-    slug: "wives-roundtable",
-    title: "Wives Roundtable",
-    category: "STUDIO TALK SHOW",
-    image: `${batchRoot}/Wives Roundtable/Wives Roundtable/Wives Roundtable - Image 1.png`,
-    gallery: [
-      `${batchRoot}/Wives Roundtable/Wives Roundtable/Wives Roundtable - Image 1.png`,
-      `${batchRoot}/Wives Roundtable/Wives Roundtable/Wives Roundtable - Image 2.png`,
-      `${batchRoot}/Wives Roundtable/Wives Roundtable/Wives Roundtable - Image 3.png`,
-      `${batchRoot}/Wives Roundtable/Wives Roundtable/Wives Roundtable - Image 4.png`,
-      `${batchRoot}/Wives Roundtable/Wives Roundtable/Wives Roundtable - Image 5.png`,
-      `${batchRoot}/Wives Roundtable/Wives Roundtable/Wives Roundtable - Image 6.png`,
-    ],
-    synopsis:
-      "A 30-minute studio-based talk show hosted by Amaka Chibuzo-Obi, providing women and families access to valuable information, tools, opportunities, and empowering discussions on marriage, career, and personal growth.",
-    notableCast: ["Amaka Chibuzo-Obi"],
-  },
-  {
-    id: 10,
-    slug: "health-monitor",
-    title: "Health Monitor",
-    category: "HEALTH & LIFESTYLE SHOW",
-    image: `${batchRoot}/Health Monitor/Health Monitor Images/Health Monitor - Image 1.png`,
-    gallery: [
-      `${batchRoot}/Health Monitor/Health Monitor Images/Health Monitor - Image 1.png`,
-      `${batchRoot}/Health Monitor/Health Monitor Images/Health Monitor - Image 2.png`,
-      `${batchRoot}/Health Monitor/Health Monitor Images/Health Monitor - Image 3.png`,
-      `${batchRoot}/Health Monitor/Health Monitor Images/Health Monitor - Image 4.png`,
-      `${batchRoot}/Health Monitor/Health Monitor Images/Health Monitor - Image 5.png`,
-    ],
-    synopsis:
-      "One of Nigeria's longest-running independent health television programs, Health Monitor features Body Care and Health Tips segments equipping viewers with practical wellness guidance and medical advice.",
-    notableCast: [],
-  },
-  {
-    id: 11,
-    slug: "the-triple-m-show",
-    title: "The Triple M Show",
-    category: "ENTERTAINMENT & LIFESTYLE SHOW",
-    image: `${batchRoot}/The Triple M Show/The Triple M Show Images/The Triple M Show - Image 1.png`,
-    gallery: [
-      `${batchRoot}/The Triple M Show/The Triple M Show Images/The Triple M Show - Image 1.png`,
-      `${batchRoot}/The Triple M Show/The Triple M Show Images/The Triple M Show - Image 2.png`,
-      `${batchRoot}/The Triple M Show/The Triple M Show Images/The Triple M Show - Image 3.png`,
-      `${batchRoot}/The Triple M Show/The Triple M Show Images/The Triple M Show - Image 4.png`,
-      `${batchRoot}/The Triple M Show/The Triple M Show Images/The Triple M Show - Image 5.png`,
-      `${batchRoot}/The Triple M Show/The Triple M Show Images/The Triple M Show - Image 6.png`,
-      `${batchRoot}/The Triple M Show/The Triple M Show Images/The Triple M Show - Image 7.png`,
-      `${batchRoot}/The Triple M Show/The Triple M Show Images/TRipple M Logo.png`,
-    ],
-    synopsis:
-      "A vibrant entertainment magazine show featuring Filmlab (movie previews & reviews), Carhub (auto deals & tips), and Culture Update (music, fashion, and pop culture news).",
-    notableCast: [],
-  },
-  {
-    id: 12,
-    slug: "my-tomorrow-drama-series",
-    title: "My Tomorrow Drama Series",
-    category: "FAMILY DRAMA ANTHOLOGY",
-    image: `${batchRoot}/My Tomorrow Drama Series/My Tomorrow Drama Series/My Tomorrow Drama Series - Image 1.png`,
-    gallery: [
-      `${batchRoot}/My Tomorrow Drama Series/My Tomorrow Drama Series/My Tomorrow Drama Series - Image 1.png`,
-      `${batchRoot}/My Tomorrow Drama Series/My Tomorrow Drama Series/My Tomorrow Drama Series - Image 2.png`,
-      `${batchRoot}/My Tomorrow Drama Series/My Tomorrow Drama Series/My Tomorrow Drama Series - Image 3.png`,
-      `${batchRoot}/My Tomorrow Drama Series/My Tomorrow Drama Series/My Tomorrow Drama Series - Image 4.png`,
-      `${batchRoot}/My Tomorrow Drama Series/My Tomorrow Drama Series/My Tomorrow Drama Series - Image 5.png`,
-      `${batchRoot}/My Tomorrow Drama Series/My Tomorrow Drama Series/My Tomorrow Drama Series - Image 6.png`,
-      `${batchRoot}/My Tomorrow Drama Series/My Tomorrow Drama Series/My Tomorrow Logo.png`,
-    ],
-    synopsis:
-      "An action-packed family drama anthology featuring standalone 26-episode seasonal story arcs. The current season 'House Husband' challenges traditional gender roles with a stay-at-home husband and career-driven wife.",
-    notableCast: [],
-  },
-  {
-    id: 13,
-    slug: "young-scholars",
-    title: "Young Scholars",
-    category: "YOUTH ENTERTAINMENT SHOW",
-    image: `${batchRoot}/Young Scholars/Young Scholars Images/Young Scholars - Image 1.png`,
-    gallery: [
-      `${batchRoot}/Young Scholars/Young Scholars Images/Young Scholars - Image 1.png`,
-      `${batchRoot}/Young Scholars/Young Scholars Images/Young Scholars - Image 2.png`,
-      `${batchRoot}/Young Scholars/Young Scholars Images/Young Scholars - Image 3.png`,
-      `${batchRoot}/Young Scholars/Young Scholars Images/Young Scholars - Image 4.png`,
-      `${batchRoot}/Young Scholars/Young Scholars Images/Young Scholars - Image 5.png`,
-      `${batchRoot}/Young Scholars/Young Scholars Images/Young Scholars - Image 6.png`,
-      `${batchRoot}/Young Scholars/Young Scholars Images/Young Scholars - Image 7.png`,
-      `${batchRoot}/Young Scholars/Young Scholars Images/YOUNG SCHOLARS.png`,
-    ],
-    synopsis:
-      "A dynamic, youth-centered program for kids under 16, offering a global stage to express themselves, showcase talents, and build creative confidence.",
-    notableCast: [],
-  },
-  {
-    id: 14,
-    slug: "mothers-world",
-    title: "Mother's World",
-    category: "LIFESTYLE & WELLNESS SHOW",
-    image: `${batchRoot}/Mothers World/Mothers World Images/Mothers World - Image 1.png`,
-    gallery: [
-      `${batchRoot}/Mothers World/Mothers World Images/Mothers World - Image 1.png`,
-      `${batchRoot}/Mothers World/Mothers World Images/Mothers World - Image 2.png`,
-      `${batchRoot}/Mothers World/Mothers World Images/Mothers World - Image 3.png`,
-      `${batchRoot}/Mothers World/Mothers World Images/Mothers World - Image 4.png`,
-      `${batchRoot}/Mothers World/Mothers World Images/Mothers World - Image 5.png`,
-      `${batchRoot}/Mothers World/Mothers World Images/Mothers World - Image 6.png`,
-    ],
-    synopsis:
-      "Mother's World guides viewers on motherhood, child bonding, and healthy living through flagship cooking segment 'Healthy Meals' and expert discussions on maternal wellness.",
-    notableCast: [],
-  },
-  {
-    id: 15,
-    slug: "awada-express",
-    title: "Awada Express",
-    category: "COMEDY SHOW",
-    image: `${batchRoot}/Awada Express/Image 1.png`,
-    gallery: [
-      `${batchRoot}/Awada Express/Image 1.png`,
-      `${batchRoot}/Awada Express/Image 2.png`,
-      `${batchRoot}/Awada Express/Image 3.png`,
-      `${batchRoot}/Awada Express/Image 4.png`,
-      `${batchRoot}/Awada Express/Image 5.png`,
-      `${batchRoot}/Awada Express/Image 6.png`,
-      `${batchRoot}/Awada Express/Image 7.png`,
-    ],
-    synopsis:
-      "Awada Express delivers fast-paced, high-energy African comedy, sketches, and humorous cultural commentary designed to entertain family audiences.",
-    notableCast: [],
-  },
-  {
-    id: 16,
-    slug: "class-of-kabuki",
-    title: "Class of Kabuki",
-    category: "DRAMA & ENTERTAINMENT",
-    image: `${batchRoot}/Class of Kabuki/Image 1.png`,
-    gallery: [
-      `${batchRoot}/Class of Kabuki/Image 1.png`,
-      `${batchRoot}/Class of Kabuki/Image 2.png`,
-      `${batchRoot}/Class of Kabuki/Image 3.png`,
-      `${batchRoot}/Class of Kabuki/Image 4.png`,
-      `${batchRoot}/Class of Kabuki/Image 5.png`,
-      `${batchRoot}/Class of Kabuki/Image 6.png`,
-      `${batchRoot}/Class of Kabuki/Image 7.png`,
-      `${batchRoot}/Class of Kabuki/Image 8.png`,
-    ],
-    synopsis:
-      "Class of Kabuki (COK) brings exciting youth drama and theatrical storytelling focusing on school life, student rivalries, aspirations, and contemporary youth culture.",
-    notableCast: [],
-  },
-  {
-    id: 17,
-    slug: "creative-control",
-    title: "Creative Control",
-    category: "CREATIVE & ARTS SHOW",
-    image: `${batchRoot}/Creative Control/Image 1.png`,
-    gallery: [
-      `${batchRoot}/Creative Control/Creative Control Logo.png`,
-      `${batchRoot}/Creative Control/Image 1.png`,
-      `${batchRoot}/Creative Control/Image 2.png`,
-      `${batchRoot}/Creative Control/Image 3.png`,
-      `${batchRoot}/Creative Control/Image 4.png`,
-      `${batchRoot}/Creative Control/Image 5.png`,
-      `${batchRoot}/Creative Control/Image 6.png`,
-      `${batchRoot}/Creative Control/Image 7.png`,
-    ],
-    synopsis:
-      "Creative Control spotlights innovators, filmmakers, content creators, and artists pushing creative boundaries in music, media, design, and digital production.",
-    notableCast: [],
-  },
-  {
-    id: 18,
-    slug: "e-com",
-    title: "E.COM",
-    category: "TECH & BUSINESS SHOW",
-    image: `${batchRoot}/E.COM/Image 1.png`,
-    gallery: [
-      `${batchRoot}/E.COM/Image 1.png`,
-      `${batchRoot}/E.COM/Image 2.png`,
-      `${batchRoot}/E.COM/Image 3.png`,
-      `${batchRoot}/E.COM/Image 4.png`,
-      `${batchRoot}/E.COM/Image 5.png`,
-      `${batchRoot}/E.COM/Image 6.png`,
-      `${batchRoot}/E.COM/Image 7.png`,
-      `${batchRoot}/E.COM/Image 8.png`,
-    ],
-    synopsis:
-      "E.COM explores digital commerce, tech entrepreneurship, e-business solutions, and financial literacy driving modern African markets.",
-    notableCast: [],
-  },
-  {
-    id: 19,
-    slug: "food-clinic",
-    title: "Food Clinic",
-    category: "CULINARY & HEALTH SHOW",
-    image: `${batchRoot}/Food Clinic/Image 1.png`,
-    gallery: [
-      `${batchRoot}/Food Clinic/Image 1.png`,
-      `${batchRoot}/Food Clinic/Image 2.png`,
-      `${batchRoot}/Food Clinic/Image 3.png`,
-      `${batchRoot}/Food Clinic/Image 4.png`,
-      `${batchRoot}/Food Clinic/Image 5.png`,
-    ],
-    synopsis:
-      "Food Clinic combines culinary arts with nutritional therapy, demonstrating how wholesome diets and natural ingredients can cure, nourish, and revitalize the body.",
-    notableCast: [],
-  },
-  {
-    id: 20,
-    slug: "goge-africa",
-    title: "Goge Africa",
-    category: "CULTURE & TRAVEL DOCUMENTARY",
-    image: `${batchRoot}/Goge Africa/Image 1.png`,
-    gallery: [
-      `${batchRoot}/Goge Africa/New_Logo_FULL.png`,
-      `${batchRoot}/Goge Africa/Image 1.png`,
-      `${batchRoot}/Goge Africa/Image 2.png`,
-      `${batchRoot}/Goge Africa/Image 3.png`,
-      `${batchRoot}/Goge Africa/Image 4.png`,
-      `${batchRoot}/Goge Africa/Image 5.png`,
-      `${batchRoot}/Goge Africa/Image 6.png`,
-      `${batchRoot}/Goge Africa/Image 7.png`,
-    ],
-    synopsis:
-      "Goge Africa is an iconic cultural tourism series showcasing African heritage, traditional festivals, dance, food, and music across the continent.",
-    notableCast: [],
-  },
-  {
-    id: 21,
-    slug: "heart-of-a-mother",
-    title: "Heart of a Mother",
-    category: "FAMILY DRAMA SHOW",
-    image: `${batchRoot}/Heart of a Mother/Image 1.png`,
-    gallery: [
-      `${batchRoot}/Heart of a Mother/Image 1.png`,
-      `${batchRoot}/Heart of a Mother/Image 2.png`,
-      `${batchRoot}/Heart of a Mother/Image 3.png`,
-      `${batchRoot}/Heart of a Mother/Image 4.png`,
-      `${batchRoot}/Heart of a Mother/Image 5.png`,
-      `${batchRoot}/Heart of a Mother/Image 6.png`,
-      `${batchRoot}/Heart of a Mother/Image 7.png`,
-      `${batchRoot}/Heart of a Mother/Image 8.png`,
-    ],
-    synopsis:
-      "Heart of a Mother explores the emotional sacrifices, unyielding love, and resilience of mothers navigating family crises, betrayal, and triumph.",
-    notableCast: [],
-  },
-  {
-    id: 22,
-    slug: "miss-enterprise-africa",
-    title: "Miss Enterprise Africa",
-    category: "REALITY & ENTREPRENEURSHIP",
-    image: `${batchRoot}/Miss Enterprise Africa/Image 1.png`,
-    gallery: [
-      `${batchRoot}/Miss Enterprise Africa/Image 1.png`,
-      `${batchRoot}/Miss Enterprise Africa/Image 2.png`,
-      `${batchRoot}/Miss Enterprise Africa/Image 3.png`,
-      `${batchRoot}/Miss Enterprise Africa/Image 4.png`,
-      `${batchRoot}/Miss Enterprise Africa/Image 5.png`,
-      `${batchRoot}/Miss Enterprise Africa/Image 6.png`,
-      `${batchRoot}/Miss Enterprise Africa/Image 7.png`,
-      `${batchRoot}/Miss Enterprise Africa/Image 8.png`,
-    ],
-    synopsis:
-      "Miss Enterprise Africa is an empowering competition highlighting young female entrepreneurs, business pitch battles, leadership, and innovation across Africa.",
-    notableCast: [],
-  },
-  {
-    id: 23,
-    slug: "sands-of-time",
-    title: "Sands of Time",
-    category: "HISTORICAL DRAMA SERIES",
-    image: `${batchRoot}/Sands of Time/Image 1.png`,
-    gallery: [
-      `${batchRoot}/Sands of Time/Image 1.png`,
-      `${batchRoot}/Sands of Time/Image 2.png`,
-      `${batchRoot}/Sands of Time/Image 3.png`,
-      `${batchRoot}/Sands of Time/Image 4.png`,
-      `${batchRoot}/Sands of Time/Image 5.png`,
-      `${batchRoot}/Sands of Time/Image 6.png`,
-      `${batchRoot}/Sands of Time/Image 7.png`,
-      `${batchRoot}/Sands of Time/Image 8.png`,
-    ],
-    synopsis:
-      "Sands of Time is a captivating drama series tracing generational secrets, historical rivalries, and timeless love across changing eras.",
-    notableCast: [],
-  },
-  {
-    id: 24,
-    slug: "so-wrong-so-wright",
-    title: "So Wrong So Wright",
-    category: "COMEDY DRAMA SERIES",
-    image: `${batchRoot}/So Wrong So Wright/Image 1.png`,
-    gallery: [
-      `${batchRoot}/So Wrong So Wright/Image 1.png`,
-      `${batchRoot}/So Wrong So Wright/Image 2.png`,
-      `${batchRoot}/So Wrong So Wright/Image 3.png`,
-      `${batchRoot}/So Wrong So Wright/Image 4.png`,
-      `${batchRoot}/So Wrong So Wright/Image 5.png`,
-      `${batchRoot}/So Wrong So Wright/Image 6.png`,
-      `${batchRoot}/So Wrong So Wright/Image 7.png`,
-    ],
-    synopsis:
-      "So Wrong So Wright is a hilarious family sit-com revolving around the comedic friction between Mr. and Mrs. Wright, their extended relatives, and quirky neighbors.",
-    notableCast: [],
-  },
-  {
-    id: 25,
-    slug: "sports-pizza",
-    title: "Sports Pizza",
-    category: "SPORTS MAGAZINE SHOW",
-    image: `${batchRoot}/Sports Pizza/Image 1.png`,
-    gallery: [
-      `${batchRoot}/Sports Pizza/Image 1.png`,
-      `${batchRoot}/Sports Pizza/Image 2.png`,
-      `${batchRoot}/Sports Pizza/Image 3.png`,
-      `${batchRoot}/Sports Pizza/Image 4.png`,
-      `${batchRoot}/Sports Pizza/Image 5.png`,
-      `${batchRoot}/Sports Pizza/Image 6.png`,
-      `${batchRoot}/Sports Pizza/Image 7.png`,
-      `${batchRoot}/Sports Pizza/Image 8.png`,
-    ],
-    synopsis:
-      "Sports Pizza offers a spicy slice of sports action—featuring football news, player interviews, match analysis, and global sports highlights.",
-    notableCast: [],
-  },
-  {
-    id: 26,
-    slug: "the-last-card",
-    title: "The Last Card",
-    category: "THRILLER DRAMA SERIES",
-    image: `${batchRoot}/The Last Card/Image 1.png`,
-    gallery: [
-      `${batchRoot}/The Last Card/Image 1.png`,
-      `${batchRoot}/The Last Card/Image 2.png`,
-      `${batchRoot}/The Last Card/Image 3.png`,
-      `${batchRoot}/The Last Card/Image 4.png`,
-      `${batchRoot}/The Last Card/Image 5.png`,
-      `${batchRoot}/The Last Card/Image 6.png`,
-      `${batchRoot}/The Last Card/Image 7.png`,
-      `${batchRoot}/The Last Card/Image 8.png`,
-    ],
-    synopsis:
-      "The Last Card is a high-stakes thriller centered on corporate espionage, revenge, political maneuvering, and unexpected strategic gambits.",
-    notableCast: [],
-  },
-  {
-    id: 27,
-    slug: "tukunyan-arewa",
-    title: "Tukunyan Arewa",
-    category: "CULTURAL LIFESTYLE SHOW",
-    image: `${batchRoot}/Tukunyan Arewa/Image 1.png`,
-    gallery: [
-      `${batchRoot}/Tukunyan Arewa/Image 1.png`,
-      `${batchRoot}/Tukunyan Arewa/Image 2.png`,
-      `${batchRoot}/Tukunyan Arewa/Image 3.png`,
-      `${batchRoot}/Tukunyan Arewa/Image 4.png`,
-      `${batchRoot}/Tukunyan Arewa/Image 5.png`,
-      `${batchRoot}/Tukunyan Arewa/Image 6.png`,
-      `${batchRoot}/Tukunyan Arewa/Image 7.png`,
-      `${batchRoot}/Tukunyan Arewa/Image 8.png`,
-    ],
-    synopsis:
-      "Tukunyan Arewa celebrates Northern Nigerian culinary delicacies, traditional arts, crafts, and rich cultural heritage.",
-    notableCast: [],
-  },
-  {
-    id: 28,
-    slug: "young-chef",
-    title: "Young Chef",
-    category: "CULINARY COMPETITION SHOW",
-    image: `${batchRoot}/Young Chef/Image 1.png`,
-    gallery: [
-      `${batchRoot}/Young Chef/Image 1.png`,
-      `${batchRoot}/Young Chef/Image 2.png`,
-      `${batchRoot}/Young Chef/Image 3.png`,
-      `${batchRoot}/Young Chef/Image 4.png`,
-      `${batchRoot}/Young Chef/Image 5.png`,
-      `${batchRoot}/Young Chef/Image 6.png`,
-      `${batchRoot}/Young Chef/Image 7.png`,
-    ],
-    synopsis:
-      "Young Chef is an exciting cooking competition giving talented young culinary prodigies a platform to cook, innovate, and impress master chefs.",
-    notableCast: [],
-  },
-];
+export function mapProgramme(doc: SanityProgramme, index: number): Programme {
+  return {
+    id: index + 1,
+    slug: doc.slug?.current ?? '',
+    title: doc.title || 'Untitled programme',
+    category: doc.category || 'UNCATEGORISED',
+    image: urlForImage(doc.thumbnail) || '/hero_bg.jpg',
+    gallery: [],
+    synopsis: doc.summary || '',
+    notableCast: doc.hosts || [],
+    isFeatured: Boolean(doc.isFeatured),
+    description: doc.description || [],
+  };
+}
 
-export const programmeCategories = [
-  "ALL",
-  ...Array.from(new Set(programmes.map((programme) => programme.category))),
-];
+export async function getAllProgrammes(): Promise<Programme[]> {
+  const docs = await sanityFetch<SanityProgramme[]>({
+    query: allProgrammesQuery,
+    tags: ['programmes'],
+  });
 
-export function getProgrammeBySlug(slug: string) {
-  return programmes.find((programme) => programme.slug === slug);
+  return (docs ?? [])
+    .filter((doc) => Boolean(doc.slug?.current))
+    .map(mapProgramme);
+}
+
+export async function getProgrammeBySlug(slug: string): Promise<Programme | null> {
+  const doc = await sanityFetch<SanityProgramme | null>({
+    query: programmeBySlugQuery,
+    params: { slug },
+    tags: ['programmes'],
+  });
+
+  if (!doc?.slug?.current) return null;
+  return mapProgramme(doc, 0);
+}
+
+export async function getAllProgrammeSlugs(): Promise<string[]> {
+  const slugs = await sanityFetch<string[]>({
+    query: allProgrammeSlugsQuery,
+    tags: ['programmes'],
+  });
+  return (slugs ?? []).filter(Boolean);
 }

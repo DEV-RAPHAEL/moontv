@@ -3,9 +3,8 @@ import {
   getNigeriaDayName,
   getNigeriaHourMinute,
   enrichSlotsWithNigeriaTime,
-  weeklySchedule,
+  getWeeklySchedule,
 } from '@/lib/schedule';
-import { programmes } from '@/lib/programmes';
 
 export async function GET() {
   const day = getNigeriaDayName();
@@ -13,25 +12,15 @@ export async function GET() {
   const currentNigeriaTime = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
   const currentMinutes = hour * 60 + minute;
 
-  const rawSlots = weeklySchedule[day] || [];
-  const enriched = enrichSlotsWithNigeriaTime(rawSlots);
+  const week = await getWeeklySchedule();
+  const enriched = enrichSlotsWithNigeriaTime(week[day as keyof typeof week] ?? []);
 
   // Only return slots that haven't ended yet (on-air + upcoming)
-  const relevantSlots = enriched.filter(s => (s.endMinutes ?? 0) > currentMinutes);
-
-  // Attach programme images to each slot
-  const slotsWithImages = relevantSlots.map(slot => {
-    const programme = slot.slug ? programmes.find(p => p.slug === slot.slug) : null;
-    return {
-      ...slot,
-      image: programme ? programme.image : '/hero_bg.jpg',
-    };
-  });
+  const slots = enriched.filter((s) => (s.endMinutes ?? 0) > currentMinutes);
 
   return NextResponse.json({
     day,
     nigeriaTime: currentNigeriaTime,
-    slots: slotsWithImages,
+    slots,
   });
 }
-

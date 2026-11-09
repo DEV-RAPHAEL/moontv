@@ -6,46 +6,57 @@ import Link from "next/link";
 import "./home.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { programmes } from "@/lib/programmes";
-import { weeklySchedule, getNigeriaDayName, getNigeriaHourMinute, enrichSlotsWithNigeriaTime } from "@/lib/schedule";
+import NoContent from "@/components/NoContent";
+import type { Programme } from "@/lib/programmes";
 import type { ScheduleSlot } from "@/lib/schedule";
 
 export default function Home() {
+  const [programmes, setProgrammes] = useState<Programme[]>([]);
   const [onAirSlots, setOnAirSlots] = useState<ScheduleSlot[]>([]);
   const [nigeriaTimeDisplay, setNigeriaTimeDisplay] = useState<string>('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Compute Nigeria on-air schedule
-    const computeSchedule = () => {
-      const day = getNigeriaDayName();
-      const { hour, minute } = getNigeriaHourMinute();
-      const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')} WAT`;
-      setNigeriaTimeDisplay(timeStr);
+    let cancelled = false;
 
-      const slots = weeklySchedule[day] || [];
-      const enriched = enrichSlotsWithNigeriaTime(slots);
-      // Filter to currently playing + future slots, up to 5
-      const currentMinutes = hour * 60 + minute;
-      const relevant = enriched.filter(s => (s.endMinutes ?? 0) > currentMinutes);
-      setOnAirSlots(relevant.slice(0, 5));
+    const loadContent = async () => {
+      try {
+        const [programmesRes, scheduleRes] = await Promise.all([
+          fetch('/api/programmes'),
+          fetch('/api/schedule'),
+        ]);
+        const programmesData = await programmesRes.json();
+        const scheduleData = await scheduleRes.json();
+        if (cancelled) return;
+
+        setProgrammes(programmesData.programmes ?? []);
+        setOnAirSlots(scheduleData.slots ?? []);
+        setNigeriaTimeDisplay(
+          scheduleData.nigeriaTime ? `${scheduleData.nigeriaTime} WAT` : '',
+        );
+      } catch (error) {
+        if (cancelled) return;
+        console.error('Failed to load home content:', error);
+        setProgrammes([]);
+        setOnAirSlots([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     };
 
-    computeSchedule();
-    // Refresh every minute to keep Nigeria time accurate
-    const interval = setInterval(computeSchedule, 60000);
-    return () => clearInterval(interval);
+    loadContent();
+    // Refresh every minute to keep the Nigeria-time schedule current
+    const interval = setInterval(loadContent, 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, []);
 
-  const featuredProgramme = programmes[0];
+  const featuredProgramme =
+    programmes.find((programme) => programme.isFeatured) ?? programmes[0];
 
-  // Resolve programme image from slug
-  const getProgrammeImage = (slug?: string) => {
-    if (!slug) return '/hero_bg.jpg';
-    const found = programmes.find(p => p.slug === slug);
-    return found ? found.image : '/hero_bg.jpg';
-  };
-
-  // Section Curation Lists from the 29 programmes
+  // Section Curation Lists
   const trendingProgrammes = programmes.slice(5, 10);
   const culturalGems = programmes.slice(10, 14);
   const recentlyDiscovered = programmes.slice(14, 18);
@@ -109,7 +120,7 @@ export default function Home() {
           {onAirSlots.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1.5rem', marginTop: '2rem' }}>
               {onAirSlots.map((slot, idx) => {
-                const imgSrc = getProgrammeImage(slot.slug);
+                const imgSrc = slot.image || '/hero_bg.jpg';
                 return (
                   <div key={`${slot.slug ?? slot.title}-${idx}`} style={{
                     backgroundColor: 'var(--bg-secondary)',
@@ -159,18 +170,8 @@ export default function Home() {
               })}
             </div>
           ) : (
-            <div style={{
-              backgroundColor: 'var(--bg-secondary)',
-              borderRadius: '12px',
-              padding: '3rem 2rem',
-              textAlign: 'center',
-              border: '1px solid var(--border-color)',
-              marginTop: '2rem',
-              color: 'var(--text-secondary)'
-            }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📺</div>
-              <p style={{ fontWeight: 'bold' }}>No broadcast scheduled for this time slot.</p>
-              <p style={{ fontSize: '0.9rem' }}>Moon TV broadcasts from 6:00 AM – 10:00 PM WAT daily.</p>
+            <div style={{ marginTop: '2rem' }}>
+              <NoContent message={loading ? 'Loading schedule…' : 'No content yet'} />
             </div>
           )}
         </div>
@@ -186,9 +187,10 @@ export default function Home() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.5rem' }}>
-            {trendingProgrammes.map((prog) => {
-              return (
+          {trendingProgrammes.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.5rem' }}>
+              {trendingProgrammes.map((prog) => {
+                return (
                 <div key={prog.slug} style={{
                   backgroundColor: 'var(--bg-secondary)',
                   borderRadius: '10px',
@@ -211,7 +213,10 @@ export default function Home() {
                 </div>
               );
             })}
-          </div>
+            </div>
+          ) : (
+            <NoContent message={loading ? 'Loading programmes…' : 'No content yet'} />
+          )}
         </div>
       </section>
 
@@ -225,9 +230,10 @@ export default function Home() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
-            {culturalGems.map((prog) => {
-              return (
+          {culturalGems.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
+              {culturalGems.map((prog) => {
+                return (
                 <div key={prog.slug} style={{
                   backgroundColor: 'var(--bg-secondary)',
                   borderRadius: '12px',
@@ -255,11 +261,15 @@ export default function Home() {
                 </div>
               );
             })}
-          </div>
+            </div>
+          ) : (
+            <NoContent message={loading ? 'Loading programmes…' : 'No content yet'} />
+          )}
         </div>
       </section>
 
       {/* 6. FEATURED DETAILED SPOTLIGHT BANNER */}
+      {featuredProgramme && (
       <section className="helloSection">
         <div className="container">
           <div className="helloContainer animate-fade-up delay-200">
@@ -301,6 +311,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* 7. PREMIUM CURATED SECTION: RECENTLY DISCOVERED */}
       <section className="scheduleSection" id="recently" style={{ padding: '5rem 0', borderTop: '1px solid var(--border-color)' }}>
@@ -312,7 +323,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
+          {recentlyDiscovered.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
             {recentlyDiscovered.map((prog) => {
               return (
                 <div key={prog.slug} style={{
@@ -342,7 +354,10 @@ export default function Home() {
                 </div>
               );
             })}
-          </div>
+            </div>
+          ) : (
+            <NoContent message={loading ? 'Loading programmes…' : 'No content yet'} />
+          )}
         </div>
       </section>
 

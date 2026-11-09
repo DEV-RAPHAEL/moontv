@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { programmes } from '@/lib/programmes';
 
 export default function Footer() {
     return (
@@ -18,9 +17,8 @@ export default function Footer() {
                     <div className="footerLinks">
                         <div className="footerCol">
                             <span className="footerColTitle">Programmes</span>
-                            {programmes.slice(0, 3).map((programme) => (
-                                <Link href={`/program/${programme.slug}`} className="footerLink" key={programme.slug}>{programme.title}</Link>
-                            ))}
+                            <Link href="/programs" className="footerLink">All Programmes</Link>
+                            <Link href="/epg" className="footerLink">Weekly Schedule</Link>
                             <Link href="/programs" className="footerLink">View All</Link>
                         </div>
                         <div className="footerCol">
@@ -28,8 +26,8 @@ export default function Footer() {
                             <Link href="/about" className="footerLink">About Us</Link>
                             <Link href="/advertise" className="footerLink">Advertise with us</Link>
                             <Link href="/contact" className="footerLink">Contact Form</Link>
-                            <Link href="/admin" className="footerLink" style={{ color: "var(--accent-gold)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                                Admin Portal 🔒
+                            <Link href="/studio" className="footerLink" style={{ color: "var(--accent-gold)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                                Content Studio 🔒
                             </Link>
                         </div>
                         <div className="footerCol">

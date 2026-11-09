@@ -1,23 +1,40 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getProgrammeBySlug, programmes } from "@/lib/programmes";
-import Image from "next/image";
+import {
+    getAllProgrammeSlugs,
+    getAllProgrammes,
+    getProgrammeBySlug,
+} from "@/lib/programmes";
 import { notFound } from "next/navigation";
 import "../../home.css";
 
 export async function generateStaticParams() {
-    return programmes.map((programme) => ({ slug: programme.slug }));
+    const slugs = await getAllProgrammeSlugs();
+    return slugs.map((slug) => ({ slug }));
+}
+
+function portableTextToPlainText(blocks: unknown[]): string {
+    return blocks
+        .map((block) => {
+            if (!block || typeof block !== 'object') return '';
+            const children = (block as { children?: { text?: string }[] }).children;
+            return (children ?? []).map((child) => child.text ?? '').join('');
+        })
+        .filter(Boolean)
+        .join('\n\n');
 }
 
 export default async function ProgramDetail({ params }: { params: Promise<{ slug: string }> }) {
     const resolvedParams = await params;
-    const prog = getProgrammeBySlug(resolvedParams.slug);
+    const prog = await getProgrammeBySlug(resolvedParams.slug);
 
     if (!prog) {
         notFound();
     }
 
+    const programmes = await getAllProgrammes();
     const otherProgrammes = programmes.filter((programme) => programme.slug !== prog.slug).slice(0, 3);
+    const description = portableTextToPlainText(prog.description);
 
     return (
         <>
@@ -43,35 +60,35 @@ export default async function ProgramDetail({ params }: { params: Promise<{ slug
                                 {prog.synopsis}
                             </p>
 
+                            {description && (
+                                <>
+                                    <h2 style={{ fontSize: "2rem", marginBottom: "1.5rem", fontWeight: "600", color: "white" }}>About</h2>
+                                    <p style={{ color: "var(--text-secondary)", lineHeight: 1.8, fontSize: "1.1rem", marginBottom: "3rem", whiteSpace: "pre-line" }}>
+                                        {description}
+                                    </p>
+                                </>
+                            )}
+
                             {prog.notableCast.length > 0 && (
                                 <>
-                                    <h2 style={{ fontSize: "2rem", marginBottom: "1.5rem", fontWeight: "600", color: "white" }}>Notable Cast & Hosts</h2>
+                                    <h2 style={{ fontSize: "2rem", marginBottom: "1.5rem", fontWeight: "600", color: "white" }}>Hosts</h2>
                                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1.5rem", marginBottom: "3.5rem" }}>
-                                        {prog.notableCast.map((castMember) => (
-                                            <div key={castMember} style={{ display: "flex", alignItems: "center", gap: "1rem", backgroundColor: "var(--bg-secondary)", padding: "1.25rem 1.5rem", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+                                        {prog.notableCast.map((host) => (
+                                            <div key={host} style={{ display: "flex", alignItems: "center", gap: "1rem", backgroundColor: "var(--bg-secondary)", padding: "1.25rem 1.5rem", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
                                                 <div style={{ width: "44px", height: "44px", borderRadius: "50%", backgroundColor: "rgba(216, 182, 66, 0.08)", border: "1.5px solid var(--accent-gold)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent-gold)", fontSize: "1.1rem", fontWeight: "700", flexShrink: 0 }}>
-                                                    {castMember.split(' ').map(n => n[0]).join('')}
+                                                    {host.split(' ').map(n => n[0]).join('')}
                                                 </div>
                                                 <div>
                                                     <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "1px", fontWeight: "600" }}>
-                                                        {prog.category.includes("TALK") || prog.category.includes("CULINARY") || prog.category.includes("AVIATION") || prog.category.includes("HEALTH") ? "Host / Presenter" : "Cast Member"}
+                                                        Host / Presenter
                                                     </div>
-                                                    <h4 style={{ fontSize: "1.05rem", fontWeight: "600", color: "white", marginTop: "2px" }}>{castMember}</h4>
+                                                    <h4 style={{ fontSize: "1.05rem", fontWeight: "600", color: "white", marginTop: "2px" }}>{host}</h4>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 </>
                             )}
-
-                            <h2 style={{ fontSize: "1.8rem", marginBottom: "1.5rem", marginTop: "3rem" }}>Gallery</h2>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
-                                {prog.gallery.map((image) => (
-                                    <div key={image} style={{ height: "150px", borderRadius: "8px", overflow: "hidden", border: "1px solid var(--border-color)", backgroundColor: "var(--bg-secondary)", position: "relative" }}>
-                                        <Image src={image} alt={`${prog.title} gallery`} fill style={{ objectFit: "cover" }} />
-                                    </div>
-                                ))}
-                            </div>
                         </div>
 
                         <div style={{ flex: "1 1 300px" }}>
@@ -85,7 +102,8 @@ export default async function ProgramDetail({ params }: { params: Promise<{ slug
                                             style={{ display: "flex", gap: "1rem", alignItems: "center", borderBottom: index === otherProgrammes.length - 1 ? "none" : "1px solid var(--border-color)", paddingBottom: index === otherProgrammes.length - 1 ? 0 : "1rem" }}
                                         >
                                             <div style={{ width: "80px", height: "60px", position: "relative", flex: "0 0 80px", borderRadius: "4px", overflow: "hidden" }}>
-                                                <Image src={programme.image} fill style={{ objectFit: "cover" }} alt="" />
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img src={programme.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                             </div>
                                             <div>
                                                 <h4 style={{ fontSize: "1rem", color: "white" }}>{programme.title}</h4>

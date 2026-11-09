@@ -1,14 +1,45 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { programmeCategories, programmes } from "@/lib/programmes";
+import NoContent from "@/components/NoContent";
+import type { Programme } from "@/lib/programmes";
 import "../home.css";
 
 export default function Programs() {
-    const [activeCategory, setActiveCategory] = useState(programmeCategories[0]);
+    const [programmes, setProgrammes] = useState<Programme[]>([]);
+    const [activeCategory, setActiveCategory] = useState("ALL");
     const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        fetch('/api/programmes')
+            .then((res) => res.json())
+            .then((data) => {
+                if (cancelled) return;
+                setProgrammes(data.programmes ?? []);
+            })
+            .catch((error) => {
+                if (cancelled) return;
+                console.error('Failed to load programmes:', error);
+                setProgrammes([]);
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const categories = [
+        "ALL",
+        ...Array.from(new Set(programmes.map((prog) => prog.category))).sort(),
+    ];
 
     const filteredProgrammes = programmes.filter((prog) => {
         const matchesCategory = activeCategory === "ALL" || prog.category === activeCategory;
@@ -66,7 +97,7 @@ export default function Programs() {
                                     color: "white"
                                 }}
                             >
-                                {programmeCategories.map((cat) => (
+                                {categories.map((cat) => (
                                     <option key={cat} value={cat}>{cat}</option>
                                 ))}
                             </select>
@@ -76,12 +107,16 @@ export default function Programs() {
                         </span>
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "2rem" }}>
-                        {filteredProgrammes.length === 0 ? (
-                            <div style={{ gridColumn: "1 / -1", padding: "3rem 1.5rem", borderRadius: "12px", backgroundColor: "var(--bg-secondary)", border: "1px solid var(--border-color)", color: "var(--text-secondary)", textAlign: "center" }}>
-                                No programmes match your search or selected category.
+                        {loading ? (
+                            <div style={{ gridColumn: "1 / -1" }}>
+                                <NoContent message="Loading programmes…" />
+                            </div>
+                        ) : filteredProgrammes.length === 0 ? (
+                            <div style={{ gridColumn: "1 / -1" }}>
+                                <NoContent message={programmes.length === 0 ? "No content yet" : "No programmes match your search or selected category."} />
                             </div>
                         ) : filteredProgrammes.map((prog) => (
-                            <a href={`/program/${prog.slug}`} key={prog.id} style={{ display: "block" }}>
+                            <a href={`/program/${prog.slug}`} key={prog.slug} style={{ display: "block" }}>
                                 <div style={{ backgroundColor: "var(--bg-secondary)", borderRadius: "8px", overflow: "hidden", border: "1px solid var(--border-color)", transition: "border-color 0.3s", height: "100%", display: "flex", flexDirection: "column" }}>
                                     <div style={{ width: "100%", height: "200px", position: "relative", backgroundColor: "#0b1a0e" }}>
                                         {/* eslint-disable-next-line @next/next/no-img-element */}

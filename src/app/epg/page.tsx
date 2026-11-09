@@ -1,51 +1,39 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
+import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import Link from "next/link";
-import { programmes } from "@/lib/programmes";
-import { weeklySchedule, enrichSlotsWithNigeriaTime, getNigeriaDayName } from "@/lib/schedule";
+import NoContent from "@/components/NoContent";
+import {
+    enrichSlotsWithNigeriaTime,
+    getNigeriaDayName,
+    getNigeriaHourMinute,
+    getWeeklySchedule,
+    weekDays,
+    type WeekDay,
+} from "@/lib/schedule";
 import "../home.css";
 
-type Day = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+export const dynamic = 'force-dynamic';
 
-export default function EPG() {
-    const days: Day[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const isWeekDay = (value: string): value is WeekDay =>
+    (weekDays as readonly string[]).includes(value);
 
-    // Default to current Nigeria day
-    const [activeDay, setActiveDay] = useState<Day>('Monday');
-    const [nigeriaDay, setNigeriaDay] = useState<Day>('Monday');
-    const [nigeriaTime, setNigeriaTime] = useState<string>('');
+export default async function EPG({
+    searchParams,
+}: {
+    searchParams: Promise<{ day?: string }>;
+}) {
+    const { day } = await searchParams;
+    const nigeriaDay = getNigeriaDayName();
+    const activeDay: WeekDay = day && isWeekDay(day) ? day : (nigeriaDay as WeekDay);
+    const week = await getWeeklySchedule();
+    const rawSlots = week[activeDay];
 
-    useEffect(() => {
-        const computeDay = () => {
-            const day = getNigeriaDayName() as Day;
-            setNigeriaDay(day);
-            setActiveDay(day);
-
-            const now = new Date();
-            const lagosDate = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Lagos' }));
-            const h = String(lagosDate.getHours()).padStart(2, '0');
-            const m = String(lagosDate.getMinutes()).padStart(2, '0');
-            setNigeriaTime(`${h}:${m} WAT`);
-        };
-        computeDay();
-        const interval = setInterval(computeDay, 60000);
-        return () => clearInterval(interval);
-    }, []);
-
-    // Enrich current day's slots with real isNowPlaying based on Nigeria time
-    const rawSlots = weeklySchedule[activeDay] || [];
     const currentSlots = activeDay === nigeriaDay
         ? enrichSlotsWithNigeriaTime(rawSlots)
-        : rawSlots.map(s => ({ ...s, isNowPlaying: false }));
+        : rawSlots.map((s) => ({ ...s, isNowPlaying: false }));
 
-    const getProgrammeImage = (slug?: string) => {
-        if (!slug) return undefined;
-        const found = programmes.find(p => p.slug === slug);
-        return found ? found.image : undefined;
-    };
+    const { hour, minute } = getNigeriaHourMinute();
+    const nigeriaTime = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')} WAT`;
 
     return (
         <>
@@ -56,13 +44,11 @@ export default function EPG() {
                         <span className="section-subtitle" style={{ color: "var(--accent-gold)", letterSpacing: "2px" }}>EPG GUIDE</span>
                         <h1 className="section-title">Weekly Broadcast <span>Schedule</span></h1>
                         <p style={{ color: "var(--text-secondary)", maxWidth: "600px", margin: "1rem auto 0", fontSize: "1.05rem" }}>
-                            Stay tuned to Moon TV. Filter showtimes dynamically day-by-day and select EPG slots to explore programme cast and synopsis details.
+                            Stay tuned to Moon TV. Filter showtimes day-by-day and select EPG slots to explore programme cast and synopsis details.
                         </p>
-                        {nigeriaTime && (
-                            <p style={{ color: "var(--accent-gold)", fontSize: "0.85rem", fontWeight: "bold", marginTop: "0.5rem" }}>
-                                🕐 Nigeria Standard Time: {nigeriaTime} — Today is {nigeriaDay}
-                            </p>
-                        )}
+                        <p style={{ color: "var(--accent-gold)", fontSize: "0.85rem", fontWeight: "bold", marginTop: "0.5rem" }}>
+                            🕐 Nigeria Standard Time: {nigeriaTime} — Today is {nigeriaDay}
+                        </p>
                     </div>
 
                     {/* Day Selector Navigation Tabs */}
@@ -73,11 +59,11 @@ export default function EPG() {
                         marginBottom: "4rem",
                         flexWrap: "wrap"
                     }}>
-                        {days.map((day) => (
-                            <button
-                                key={day}
-                                onClick={() => setActiveDay(day)}
-                                className={activeDay === day ? "btn btn-green" : "btn btn-outline-gold"}
+                        {weekDays.map((dayName) => (
+                            <Link
+                                key={dayName}
+                                href={`/epg?day=${dayName}`}
+                                className={activeDay === dayName ? "btn btn-green" : "btn btn-outline-gold"}
                                 style={{
                                     padding: "0.75rem 1.75rem",
                                     fontSize: "0.9rem",
@@ -87,8 +73,8 @@ export default function EPG() {
                                     position: "relative"
                                 }}
                             >
-                                {day}
-                                {day === nigeriaDay && (
+                                {dayName}
+                                {dayName === nigeriaDay && (
                                     <span style={{
                                         position: "absolute",
                                         top: "-6px",
@@ -100,7 +86,7 @@ export default function EPG() {
                                         border: "2px solid var(--bg-primary)"
                                     }} />
                                 )}
-                            </button>
+                            </Link>
                         ))}
                     </div>
 
@@ -112,9 +98,11 @@ export default function EPG() {
                         maxWidth: "900px",
                         margin: "0 auto"
                     }}>
-                        {currentSlots.map((slot, idx) => (
+                        {currentSlots.length === 0 ? (
+                            <NoContent message="No content yet" />
+                        ) : currentSlots.map((slot, idx) => (
                             <div
-                                key={idx}
+                                key={`${slot.slug ?? slot.title}-${idx}`}
                                 style={{
                                     display: "flex",
                                     alignItems: "center",
@@ -164,11 +152,11 @@ export default function EPG() {
                                         textAlign: "center",
                                         padding: "0.25rem"
                                     }}>
-                                        {getProgrammeImage(slot.slug) ? (
+                                        {slot.image ? (
                                             // eslint-disable-next-line @next/next/no-img-element
-                                            <img src={getProgrammeImage(slot.slug)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                            <img src={slot.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                         ) : (
-                                            <span>No Images</span>
+                                            <span>No Image</span>
                                         )}
                                     </div>
 
