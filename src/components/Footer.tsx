@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import WaitlistForm from './WaitlistForm';
 
 export default function Footer() {
     return (
@@ -9,10 +10,7 @@ export default function Footer() {
                     <div className="footerLeft">
                         <h3 className="footerTitle">GET EARLY ACCESS</h3>
                         <p className="footerDesc">Join the waitlist to receive updates on our official launch.</p>
-                        <div className="waitlistForm">
-                            <input type="email" placeholder="Your email address" className="waitlistInput" />
-                            <button className="waitlistBtn">Join Waitlist</button>
-                        </div>
+                        <WaitlistForm />
                     </div>
                     <div className="footerLinks">
                         <div className="footerCol">
