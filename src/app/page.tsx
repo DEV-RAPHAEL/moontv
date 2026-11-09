@@ -11,33 +11,10 @@ import { weeklySchedule, getNigeriaDayName, getNigeriaHourMinute, enrichSlotsWit
 import type { ScheduleSlot } from "@/lib/schedule";
 
 export default function Home() {
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [showNotification, setShowNotification] = useState<string | null>(null);
-  const [user, setUser] = useState<{ username: string } | null>(null);
   const [onAirSlots, setOnAirSlots] = useState<ScheduleSlot[]>([]);
   const [nigeriaTimeDisplay, setNigeriaTimeDisplay] = useState<string>('');
 
   useEffect(() => {
-    // Load favorites from local storage
-    const storedFavs = localStorage.getItem('moon_favorites');
-    if (storedFavs) {
-      try {
-        setFavorites(JSON.parse(storedFavs));
-      } catch (e) {
-        // ignore
-      }
-    }
-
-    // Check user session
-    const storedUser = localStorage.getItem('moon_user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        // ignore
-      }
-    }
-
     // Compute Nigeria on-air schedule
     const computeSchedule = () => {
       const day = getNigeriaDayName();
@@ -59,41 +36,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const toggleFavorite = async (slug: string, title: string) => {
-    const session = localStorage.getItem('moon_user');
-    if (!session) {
-      alert('Please Sign In first to add programmes to your EPG favorites list.');
-      return;
-    }
-
-    const { email } = JSON.parse(session);
-    let updated: string[];
-    if (favorites.includes(slug)) {
-      updated = favorites.filter(s => s !== slug);
-    } else {
-      updated = [...favorites, slug];
-      // Trigger a beautiful live simulated EPG reminder notification!
-      setShowNotification(`🔔 REMINDER: "${title}" is now LIVE on Moon TV!`);
-      setTimeout(() => {
-        setShowNotification(null);
-      }, 5000);
-    }
-    setFavorites(updated);
-    localStorage.setItem('moon_favorites', JSON.stringify(updated));
-
-    try {
-      await fetch('/api/favorites/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, favorites: updated })
-      });
-    } catch (e) {
-      console.error('Failed to sync favorites with backend:', e);
-    }
-  };
-
   const featuredProgramme = programmes[0];
-  const favoriteProgrammes = programmes.filter(p => favorites.includes(p.slug));
 
   // Resolve programme image from slug
   const getProgrammeImage = (slug?: string) => {
@@ -110,36 +53,6 @@ export default function Home() {
   return (
     <main style={{ position: 'relative' }}>
       <Header />
-
-      {/* Floating EPG Notification Alert Toast */}
-      {showNotification && (
-        <div style={{
-          position: 'fixed',
-          top: '90px',
-          right: '20px',
-          backgroundColor: '#1a5c2b',
-          border: '1.5px solid var(--accent-gold)',
-          borderRadius: '10px',
-          padding: '1rem 1.5rem',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
-          color: 'white',
-          fontWeight: 'bold',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.8rem',
-          animation: 'slideIn 0.3s ease-out'
-        }}>
-          <span style={{ fontSize: '1.2rem' }}>📺</span>
-          <span>{showNotification}</span>
-          <button 
-            onClick={() => setShowNotification(null)} 
-            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontWeight: 'bold', marginLeft: '1rem' }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
 
       {/* 1. Hero Section */}
       <section className="hero">
@@ -196,7 +109,6 @@ export default function Home() {
           {onAirSlots.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1.5rem', marginTop: '2rem' }}>
               {onAirSlots.map((slot, idx) => {
-                const isFav = slot.slug ? favorites.includes(slot.slug) : false;
                 const imgSrc = getProgrammeImage(slot.slug);
                 return (
                   <div key={`${slot.slug ?? slot.title}-${idx}`} style={{
@@ -210,16 +122,6 @@ export default function Home() {
                     gap: '0.75rem',
                     boxShadow: slot.isNowPlaying ? '0 8px 30px rgba(216, 182, 66, 0.15)' : 'none'
                   }}>
-                    {/* Heart EPG Sync Button */}
-                    {slot.slug && (
-                      <button 
-                        onClick={() => toggleFavorite(slot.slug!, slot.title)} 
-                        style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '1.1rem', cursor: 'pointer', zIndex: 10, outline: 'none' }}
-                      >
-                        {isFav ? '❤️' : '🤍'}
-                      </button>
-                    )}
-
                     <div style={{ width: '100%', height: '110px', position: 'relative', borderRadius: '6px', overflow: 'hidden', backgroundColor: '#050b07' }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={imgSrc} alt={slot.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -274,68 +176,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. MY EPG FAVORITES SECTION (Blank & Full State) */}
-      <section className="scheduleSection" style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(26,92,43,0.01)', padding: '5rem 0' }}>
-        <div className="container">
-          <div className="scheduleHeader">
-            <div>
-              <span className="section-subtitle">PERSONALIZED EPG</span>
-              <h2 className="section-title" style={{ marginBottom: 0 }}>My Favorited Channels & Shows</h2>
-            </div>
-          </div>
-
-          {favoriteProgrammes.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2rem' }}>
-              {favoriteProgrammes.map((programme) => (
-                <div key={programme.slug} style={{
-                  backgroundColor: 'var(--bg-secondary)',
-                  borderRadius: '10px',
-                  border: '1px solid var(--border-color)',
-                  padding: '1.5rem',
-                  position: 'relative',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '100%'
-                }}>
-                  <button 
-                    onClick={() => toggleFavorite(programme.slug, programme.title)} 
-                    style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', zIndex: 10 }}
-                  >
-                    ❤️
-                  </button>
-                  <span style={{ color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '0.5rem' }}>{programme.category}</span>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'white', marginBottom: '0.5rem' }}>{programme.title}</h3>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', flex: 1, marginBottom: '1.5rem' }}>{programme.synopsis}</p>
-                  <Link href={`/program/${programme.slug}`} className="btn btn-outline-green" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem', width: 'fit-content' }}>
-                    View Show Details
-                  </Link>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{
-              backgroundColor: 'var(--bg-secondary)',
-              borderRadius: '12px',
-              padding: '3rem 2rem',
-              textAlign: 'center',
-              border: '2px dashed rgba(216, 182, 66, 0.25)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '1rem'
-            }}>
-              <div style={{ fontSize: '2.5rem', filter: 'grayscale(0.5)' }}>❤️</div>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 'bold', color: 'white' }}>No EPG Favorites Added Yet</h3>
-              <p style={{ color: 'var(--text-secondary)', maxWidth: '480px', fontSize: '0.9rem', lineHeight: '1.6', margin: 0 }}>
-                Build your personalized guide. Toggle the heart icon on any program cards below to synchronize shows and receive EPG Live reminder alert notifications when they broadcast live.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* 4. PREMIUM CURATED SECTION: TRENDING NOW */}
+      {/* 3. PREMIUM CURATED SECTION: TRENDING NOW */}
       <section className="scheduleSection" id="trending" style={{ borderBottom: '1px solid var(--border-color)', padding: '5rem 0' }}>
         <div className="container">
           <div className="scheduleHeader">
@@ -347,7 +188,6 @@ export default function Home() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.5rem' }}>
             {trendingProgrammes.map((prog) => {
-              const isFav = favorites.includes(prog.slug);
               return (
                 <div key={prog.slug} style={{
                   backgroundColor: 'var(--bg-secondary)',
@@ -356,13 +196,6 @@ export default function Home() {
                   overflow: 'hidden',
                   position: 'relative'
                 }}>
-                  <button 
-                    onClick={() => toggleFavorite(prog.slug, prog.title)} 
-                    style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '1.1rem', cursor: 'pointer', zIndex: 10, outline: 'none' }}
-                  >
-                    {isFav ? '❤️' : '🤍'}
-                  </button>
-
                   <div style={{ width: '100%', height: '140px', position: 'relative', backgroundColor: '#050b07' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={prog.image} alt={prog.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -394,7 +227,6 @@ export default function Home() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
             {culturalGems.map((prog) => {
-              const isFav = favorites.includes(prog.slug);
               return (
                 <div key={prog.slug} style={{
                   backgroundColor: 'var(--bg-secondary)',
@@ -405,13 +237,6 @@ export default function Home() {
                   display: 'flex',
                   flexDirection: 'column'
                 }}>
-                  <button 
-                    onClick={() => toggleFavorite(prog.slug, prog.title)} 
-                    style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '1.1rem', cursor: 'pointer', zIndex: 10 }}
-                  >
-                    {isFav ? '❤️' : '🤍'}
-                  </button>
-
                   <div style={{ width: '100%', height: '150px', position: 'relative', backgroundColor: '#050b07' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={prog.image} alt={prog.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -489,7 +314,6 @@ export default function Home() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
             {recentlyDiscovered.map((prog) => {
-              const isFav = favorites.includes(prog.slug);
               return (
                 <div key={prog.slug} style={{
                   backgroundColor: 'var(--bg-secondary)',
@@ -500,13 +324,6 @@ export default function Home() {
                   display: 'flex',
                   flexDirection: 'column'
                 }}>
-                  <button 
-                    onClick={() => toggleFavorite(prog.slug, prog.title)} 
-                    style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '1.1rem', cursor: 'pointer', zIndex: 10 }}
-                  >
-                    {isFav ? '❤️' : '🤍'}
-                  </button>
-
                   <div style={{ width: '100%', height: '150px', position: 'relative', backgroundColor: '#050b07' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={prog.image} alt={prog.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
