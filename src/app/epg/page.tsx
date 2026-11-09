@@ -2,6 +2,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NoContent from "@/components/NoContent";
+import { buildPageMetadata } from "@/lib/metadata";
 import {
     enrichSlotsWithNigeriaTime,
     getNigeriaDayName,
@@ -13,6 +14,12 @@ import {
 import "../home.css";
 
 export const dynamic = 'force-dynamic';
+
+export const metadata = buildPageMetadata(
+    'Weekly Schedule',
+    'See what is on Moon TV this week, day by day, in Nigeria Standard Time.',
+    '/epg',
+);
 
 const isWeekDay = (value: string): value is WeekDay =>
     (weekDays as readonly string[]).includes(value);

@@ -1,8 +1,15 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NoContent from "@/components/NoContent";
+import { buildPageMetadata } from "@/lib/metadata";
 import { getStreamUrl } from "@/lib/stream";
 import "../home.css";
+
+export const metadata = buildPageMetadata(
+    'Watch Live',
+    'Stream Moon TV live in Nigeria Standard Time.',
+    '/watch',
+);
 
 export default function Watch() {
     const streamUrl = getStreamUrl();

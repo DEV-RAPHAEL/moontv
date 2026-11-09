@@ -1,6 +1,13 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { buildPageMetadata } from "@/lib/metadata";
 import "../home.css";
+
+export const metadata = buildPageMetadata(
+    'About Us',
+    'Moon TV is a cultural and unity-driven television network dedicated to reshaping Nigeria’s narrative.',
+    '/about',
+);
 
 export default function About() {
     return (

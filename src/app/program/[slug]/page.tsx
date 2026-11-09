@@ -1,16 +1,32 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { buildPageMetadata } from "@/lib/metadata";
 import {
     getAllProgrammeSlugs,
     getAllProgrammes,
     getProgrammeBySlug,
 } from "@/lib/programmes";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import "../../home.css";
 
 export async function generateStaticParams() {
     const slugs = await getAllProgrammeSlugs();
     return slugs.map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+    const { slug } = await params;
+    const prog = await getProgrammeBySlug(slug);
+
+    if (!prog) return {};
+
+    return buildPageMetadata(
+        prog.title,
+        prog.synopsis || `Watch ${prog.title} on Moon TV.`,
+        `/program/${prog.slug}`,
+        prog.image,
+    );
 }
 
 function portableTextToPlainText(blocks: unknown[]): string {
