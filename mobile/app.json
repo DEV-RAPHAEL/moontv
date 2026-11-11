@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Moon TV",
+    "slug": "moontv",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "moontv",
+    "userInterfaceStyle": "dark",
+    "icon": "./assets/icon.png",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#07120C"
+        }
+      ],
+      "expo-image",
+      "expo-font"
+    ],
+    "android": {
+      "package": "com.moontv.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#07120C"
+      }
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.moontv.mobile"
+    }
+  }
+}
