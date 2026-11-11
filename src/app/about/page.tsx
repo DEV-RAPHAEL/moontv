@@ -17,7 +17,7 @@ export default function About() {
                 <div className="container">
                     <span className="section-subtitle">ABOUT US</span>
                     <h1 className="section-title">
-                        Where Nigeria's Energy <span>Begins</span>.
+                        Where Nigeria&apos;s Energy <span>Begins</span>.
                     </h1>
 
                     <div style={{ marginTop: "2rem", fontSize: "1.2rem", color: "var(--text-secondary)", lineHeight: 1.8, maxWidth: "800px" }}>

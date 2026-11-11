@@ -1,0 +1,313 @@
+MOON TV - FULL WEB SETUP RUNBOOK
+================================
+
+Do these in order. Run PowerShell commands from the repo root:
+C:\Users\NEW USER\Desktop\MoonTV\moontv
+
+CONTENT NOTE: the site now falls back to the hard-coded catalogue and schedule
+in scripts/legacy-programmes.ts and scripts/legacy-schedule.ts whenever Sanity
+returns no content. So the site works immediately, with images, without any
+Sanity setup. Steps 2-5 still matter if you want to edit content in Studio:
+once the dataset has programmes, Sanity replaces the hard-coded data.
+
+IMAGES AND DESCRIPTIONS: programme images come from
+public/Moon TV Program Details - Batch 1/ and long descriptions from the .docx
+in that folder (scripts/legacy-descriptions.ts, batch 1 shows only). A
+thumbnail or description uploaded in Studio overrides those files, so you do
+not have to upload anything for the site to look complete.
+
+If npm/npx is blocked by the PowerShell execution policy, use npm.cmd / npx.cmd
+as shown below.
+
+
+1. PUSH THE CURRENT CODE FIRST
+------------------------------
+
+Netlify builds from GitHub, and the latest work is still local.
+
+    git add -A
+    git commit -m "feat: finish web setup and add mobile app"
+    git push
+
+
+2. CREATE THE SANITY PROJECT
+----------------------------
+
+    cd "C:\Users\NEW USER\Desktop\MoonTV\moontv"
+    npx.cmd sanity login
+    npx.cmd sanity projects create "Moon TV" --dataset production --dataset-visibility public
+
+Copy the project ID it prints.
+
+The dataset must be public because the website reads content without a token.
+If it was created private:
+
+    npx.cmd sanity datasets visibility set production public
+
+
+3. CREATE .env.local
+--------------------
+
+    Copy-Item .env.example .env.local
+    notepad .env.local
+
+Fill it with:
+
+    NEXT_PUBLIC_SITE_URL=http://localhost:3000
+    NEXT_PUBLIC_SANITY_PROJECT_ID=your_project_id
+    NEXT_PUBLIC_SANITY_DATASET=production
+    NEXT_PUBLIC_SANITY_API_VERSION=2025-01-01
+
+    RESEND_API_KEY=
+    CONTACT_TO_EMAIL=
+    CONTACT_FROM_EMAIL=
+
+    NEXT_PUBLIC_STREAM_URL=
+
+Resend and stream can stay empty for now. Forms return 503 and Watch Live stays
+disabled until they are configured.
+
+
+4. ALLOW SANITY CORS
+--------------------
+
+Run this after .env.local exists:
+
+    npx.cmd sanity cors add http://localhost:3000 --credentials
+    npx.cmd sanity cors add https://moontvonline.com --credentials
+    npx.cmd sanity cors add https://www.moontvonline.com --credentials
+
+Add your Netlify URL here too once you have it.
+
+
+5. INSTALL AND SEED CONTENT
+---------------------------
+
+    npm.cmd install
+    npx.cmd sanity exec scripts/seed.ts --with-user-token
+
+Expected: it seeds 35 programmes and 203 schedule slots, then warns that 49
+playlist/movie slots have no programme reference.
+
+Then upload the bundled images and docx descriptions into Sanity:
+
+    npx.cmd sanity exec scripts/import-media.ts --with-user-token
+
+This sets `thumbnail` on the 28 programmes that have a bundled image and the
+long `description` on the 14 batch 1 shows. It writes only those two fields, so
+it is safe to re-run, and it skips the seven shows that only have the
+placeholder image.
+
+IMPORTANT: run this before editing in Studio. The seed uses createOrReplace, so
+re-running it overwrites programme thumbnails, descriptions and featured flags.
+
+SCHEDULE SOURCE: the weekly grid comes from "Moon TV Broadcast Schedule 2026.xlsx"
+(Test Run Schedule) via scripts/legacy-schedule.ts. Playlists and movie blocks
+are not stored in Sanity, so the site fills those times from the same file; any
+slot that exists in Sanity wins. Seven shows are in the grid but have no
+folder, image or write-up yet:
+
+    Title             Slug              Category
+    ----------------  ----------------  -------------------
+    Enu Ofe           enu-ofe           DRAMA SERIES
+    The STEM Show     the-stem-show     EDUCATIONAL SHOW
+    Hello Nigeria     hello-nigeria     TALK SHOW
+    Crossed Roads     crossed-roads     DRAMA SERIES
+    Comfort Zone      comfort-zone      DRAMA SERIES
+    Youth Network     youth-network     YOUTH TALK SHOW
+    Get to Know       get-to-know       EDUCATIONAL PROGRAM
+
+They are seeded with those categories only, so their pages show a placeholder
+image and no synopsis until you add both in Studio.
+
+
+6. VERIFY LOCALLY
+-----------------
+
+    npm.cmd run dev
+
+Open and check:
+
+    http://localhost:3000/studio
+        Log in, upload thumbnails, mark a featured programme.
+
+    http://localhost:3000/api/programmes
+        JSON with success: true and a non-empty programmes array.
+
+    http://localhost:3000/api/schedule
+        JSON with day, nigeriaTime and slots.
+
+    http://localhost:3000/programs
+    http://localhost:3000/epg
+    A programme detail page.
+
+If /api/programmes is empty, the Sanity project ID is wrong, the dataset is
+private, or the dataset is empty.
+
+
+7. SET UP RESEND
+----------------
+
+1. Create a Resend account.
+2. Add moontvonline.com as a sending domain.
+3. Add the SPF/DKIM DNS records Resend gives you.
+4. Wait for "Verified".
+5. Create an API key.
+6. Put the values in .env.local:
+
+    RESEND_API_KEY=re_...
+    CONTACT_TO_EMAIL=you@yourinbox.com
+    CONTACT_FROM_EMAIL=forms@moontvonline.com
+
+CONTACT_FROM_EMAIL must use the verified domain. Restart npm run dev, then
+submit each form and confirm the email arrives.
+
+
+8. DEPLOY TO NETLIFY
+--------------------
+
+In Netlify:
+
+1. Add new site -> Import an existing project -> GitHub -> DEV-RAPHAEL/moontv.
+2. Build command: npm run build
+   Publish directory: .next
+   These come from netlify.toml.
+3. Add these environment variables before the first deploy:
+
+    NEXT_PUBLIC_SITE_URL=https://moontvonline.com
+    NEXT_PUBLIC_SANITY_PROJECT_ID=...
+    NEXT_PUBLIC_SANITY_DATASET=production
+    NEXT_PUBLIC_SANITY_API_VERSION=2025-01-01
+    RESEND_API_KEY=...
+    CONTACT_TO_EMAIL=...
+    CONTACT_FROM_EMAIL=...
+    NEXT_PUBLIC_STREAM_URL=...
+
+If you want to test on the Netlify URL first, set NEXT_PUBLIC_SITE_URL to
+https://your-site.netlify.app and change it after the domain is live.
+
+4. Deploy.
+5. Open https://your-site.netlify.app/api/programmes. It must return JSON.
+6. Add that Netlify URL to Sanity CORS if Studio login fails.
+
+NOTE: NEXT_PUBLIC_* values are baked in at build time. After changing one,
+trigger a new deploy with "Clear cache and deploy site".
+
+
+9. POINT THE DOMAIN AT NETLIFY
+------------------------------
+
+Right now moontvonline.com points to an empty Apache server and its HTTPS
+certificate does not match the domain. That is why the mobile app cannot connect.
+
+In Netlify: Domain management -> Add a domain -> moontvonline.com. Then either:
+
+  - change the domain's nameservers at your registrar to Netlify DNS, or
+  - add the DNS records Netlify shows (apex A/ALIAS and www CNAME).
+
+Remove the old Apache A record. Netlify will issue a valid TLS certificate
+automatically.
+
+BEFORE CHANGING NAMESERVERS: copy any existing MX/email records. Changing
+nameservers replaces the whole DNS zone.
+
+
+10. FINAL PRODUCTION CHECK
+--------------------------
+
+Verify in a browser, without certificate bypass:
+
+    https://moontvonline.com/api/programmes
+    https://moontvonline.com/api/schedule
+    https://moontvonline.com/epg
+    https://moontvonline.com/studio
+
+Also check:
+
+    - each contact/advertise/waitlist form sends
+    - Watch Live opens the stream
+    - programme detail pages load
+    - sitemap.xml and page canonical URLs use the live domain
+
+Then point the mobile app at the live API:
+
+    cd mobile
+    Copy-Item .env.example .env
+    # Set EXPO_PUBLIC_API_URL=https://moontvonline.com
+    npx.cmd expo start -c
+
+EAS builds read EXPO_PUBLIC_API_URL from the "env" block in mobile/eas.json
+(currently https://moontvonline.com — change it there if the domain differs).
+
+
+MOBILE APP (ANDROID + IOS)
+--------------------------
+
+The mobile/ folder is an Expo (SDK 58) app. It reads the same API as the site:
+/api/programmes and /api/schedule. Icons and splash are in mobile/assets
+(generated from the brand moon logo; replace them with higher-quality artwork
+if you get it).
+
+Development on your phone (same WiFi as the PC):
+
+    cd mobile
+    npm.cmd install
+    npx.cmd expo start          # scan the QR code with Expo Go (Android/iPhone)
+
+Set EXPO_PUBLIC_API_URL in mobile/.env to your PC's LAN IP while developing
+(http://192.168.100.4:3000), and to https://moontvonline.com for store builds.
+
+Installable Android APK (test build, no store account needed):
+
+    npx.cmd expo login          # free Expo account, one-time
+    npx.cmd eas-cli build -p android --profile preview
+
+Play Store release (AAB):
+
+    npx.cmd eas-cli build -p android --profile production
+    npx.cmd eas-cli submit -p android --latest   # needs a Play developer account
+
+Apple App Store:
+
+    npx.cmd eas-cli build -p ios --profile production   # built on EAS cloud
+    npx.cmd eas-cli submit -p ios --latest             # needs an Apple developer
+                                                       # account ($99/year) and
+                                                       # App Store Connect keys
+
+Both platforms share the package/bundle id com.moontv.mobile. eas.json has
+"preview" (internal APK) and "production" (store) profiles.
+
+
+NOTES
+-----
+
+USER ACCOUNTS (Supabase):
+
+    1. Create a project at https://supabase.com (free tier, pick the region
+       closest to Nigeria, e.g. eu-west/eu-central).
+    2. SQL editor -> paste supabase/schema.sql -> Run. This creates the
+       favorites, push_tokens and reminders_sent tables with row-level
+       security so users only ever see their own rows.
+    3. Copy Project URL, anon key and service_role key from
+       Project Settings -> API into .env.local (web) and mobile/.env:
+
+         NEXT_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_URL
+         NEXT_PUBLIC_SUPABASE_ANON_KEY / EXPO_PUBLIC_SUPABASE_ANON_KEY
+         SUPABASE_SERVICE_ROLE_KEY          (web .env.local only)
+         EXPO_PUBLIC_PROJECT_ID             (mobile, for push notifications)
+
+    4. The reminder function runs as a Netlify scheduled function and sends
+       Expo push notifications ~10 minutes before a favourited show starts.
+
+- Fixed in the code before this runbook was written:
+  * Studio schedule day values now use full names (Monday...Sunday), matching
+    the website's schedule parser.
+  * The root tsconfig and ESLint config now ignore /mobile, so the web build
+    does not depend on mobile packages.
+  * netlify.toml pins Node.js 22.
+  * npm run build passes locally.
+
+- Not handled here: creating the Sanity project, verifying Resend, and changing
+  DNS need your accounts.
+
+- Risk: moving nameservers without copying MX records can break existing email.

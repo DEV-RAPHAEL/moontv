@@ -1,41 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Moon TV
 
-## Getting Started
+Public website for Moon TV, a Nigerian cultural and entertainment broadcaster. The site shows programmes, a weekly schedule, a live stream, and contact/advertising/waitlist forms, with all editorial content managed in Sanity Studio.
 
-First, run the development server:
+## Tech stack
+
+- Next.js 16 (App Router) and React 19
+- Sanity CMS, embedded at `/studio`
+- Resend for transactional email (called with `fetch`, no SDK)
+- Vitest for unit tests
+- Plain CSS (`src/app/globals.css`, `src/app/home.css`)
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open <http://localhost:3000>. The site builds and renders without any environment variables, but content, forms and the live stream stay empty or disabled until the matching services are configured.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Required | Default | Purpose |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | No | `https://moontvonline.com` | Canonical URL, sitemap, robots and social previews |
+| `NEXT_PUBLIC_SANITY_PROJECT_ID` | Yes, for content | none | Sanity project ID |
+| `NEXT_PUBLIC_SANITY_DATASET` | No | `production` | Sanity dataset name |
+| `NEXT_PUBLIC_SANITY_API_VERSION` | No | `2025-01-01` | Sanity API version |
+| `RESEND_API_KEY` | Yes, for forms | none | Resend API key |
+| `CONTACT_TO_EMAIL` | Yes, for forms | none | Inbox that receives form submissions |
+| `CONTACT_FROM_EMAIL` | Yes, for forms | none | Verified Resend sender address |
+| `NEXT_PUBLIC_STREAM_URL` | Yes, for live TV | none | Embeddable live stream URL (http/https) |
 
-## Learn More
+`NEXT_PUBLIC_*` values are baked in at build time. Changing them requires a rebuild.
 
-To learn more about Next.js, take a look at the following resources:
+Forms return `503` when the Resend variables are missing, so a submission never appears to succeed when no email was sent.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Sanity content
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Create a project at <https://www.sanity.io/manage>.
+2. Put its project ID and dataset in `.env.local`.
+3. Start the app and open <http://localhost:3000/studio> to edit content directly.
+4. To import the legacy programmes and weekly schedule from `scripts/legacy-programmes.ts` and `scripts/legacy-schedule.ts`:
 
-## Deploy on Vercel
+```bash
+npx sanity exec scripts/seed.ts --with-user-token
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The seed script links every schedule slot to a programme by reference. It skips playlist/movie slots that have no programme slug, and skips slots whose slug has no matching programme, printing both counts and any missing slugs. Thumbnails are not imported; upload them in Studio.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run the seed before editing content in Studio: it uses `createOrReplace`, so re-running it overwrites programme fields such as thumbnail, description and featured.
+
+Some legacy EPG entries reference programmes that were never part of the legacy programme list (`comfort-zone`, `crossed-roads`, `enu-ofe`, `get-to-know`, `hello-nigeria`, `the-stem-show`, `youth-network`). Those slots are not seeded and must be recreated in Studio.
+
+## Forms
+
+Contact, advertising and waitlist submissions are sent through Resend to `CONTACT_TO_EMAIL` from `CONTACT_FROM_EMAIL`. The sending domain must be verified in Resend. Each form includes a hidden honeypot field, and the three API routes share an in-memory per-IP limit of 10 requests per 10 minutes. The limiter resets on redeploy and is per server instance; use a shared store if the site runs on multiple instances.
+
+## Live stream
+
+Set `NEXT_PUBLIC_STREAM_URL` to an embeddable player URL and rebuild. When it is unset or invalid, Watch Live buttons are disabled and `/watch` shows an empty state. Providers that send `X-Frame-Options` or a restrictive CSP will not embed; use the provider's embed URL.
+
+## Scripts
+
+```bash
+npm run dev      # development server
+npm run build    # production build
+npm start        # production server
+npm run lint     # ESLint
+npm test         # Vitest unit tests
+```
 
 ## Known limitations
 
-- Accounts are deferred pending a managed auth provider.
-- Favourites are deferred pending a managed auth provider.
+- Accounts, favourites and other signed-in features are not implemented.
+- The rate limiter is in-memory and not shared between instances.
+- Programme thumbnails and the seven missing EPG programmes need manual work in Studio.
+- Real Sanity, Resend and stream integrations require live credentials and have not been exercised by the test suite.
