@@ -20,14 +20,37 @@ If npm/npx is blocked by the PowerShell execution policy, use npm.cmd / npx.cmd
 as shown below.
 
 
-1. PUSH THE CURRENT CODE FIRST
-------------------------------
+LAUNCH CHECKLIST - WHAT IS LEFT
+-------------------------------
+The code side is done: everything is committed and pushed to origin/main
+(commit 781a6da at the time of writing). npm test passes (18 tests) and
+npm run build succeeds locally. What remains needs your accounts:
 
-Netlify builds from GitHub, and the latest work is still local.
+[ ] 1. Create/connect the Netlify site (section 8). If it is already connected,
+        confirm it picked up the push and the first deploy succeeds.
+[ ] 2. Create the Sanity project and make the dataset public (section 2).
+[ ] 3. Create .env.local locally (section 3) and add CORS (section 4).
+[ ] 4. Seed Sanity and import images/descriptions (section 5).
+[ ] 5. Verify the site locally (section 6).
+[ ] 6. Verify the Resend domain and set its keys (section 7).
+[ ] 7. Set every variable in the Netlify env list (section 8), then redeploy.
+[ ] 8. Point moontvonline.com at Netlify and fix TLS (section 9).
+        Copy existing MX/email records first or email will break.
+[ ] 9. Run the production checks (section 10).
+[ ] 10. Content: add artwork/synopsis for the 7 shows listed in section 5.
+[ ] 11. Set NEXT_PUBLIC_STREAM_URL to the provider's embeddable player URL.
+[ ] 12. Mobile only: Android APK for testers; iPhone needs the Apple Developer
+        Program ($99/year) and TestFlight (see MOBILE APP section).
 
-    git add -A
-    git commit -m "feat: finish web setup and add mobile app"
-    git push
+
+1. CODE IS PUSHED (DONE)
+------------------------
+
+The latest work is on GitHub: origin/main is at commit 781a6da (or later).
+Locally verified: npm test (18 passing) and npm run build both succeed.
+
+For future changes: git add -A && git commit -m "..." && git push.
+Netlify rebuilds on every push once the site is connected (section 8).
 
 
 2. CREATE THE SANITY PROJECT
@@ -248,31 +271,40 @@ The mobile/ folder is an Expo (SDK 58) app. It reads the same API as the site:
 (generated from the brand moon logo; replace them with higher-quality artwork
 if you get it).
 
-Development on your phone (same WiFi as the PC):
+Development on your phone:
 
     cd mobile
     npm.cmd install
-    npx.cmd expo start          # scan the QR code with Expo Go (Android/iPhone)
+    npx.cmd expo start          # Android: scan the QR code with Expo Go
 
 Set EXPO_PUBLIC_API_URL in mobile/.env to your PC's LAN IP while developing
 (http://192.168.100.4:3000), and to https://moontvonline.com for store builds.
 
-Installable Android APK (test build, no store account needed):
+Android testers (no store account needed):
 
     npx.cmd expo login          # free Expo account, one-time
-    npx.cmd eas-cli build -p android --profile preview
+    npx.cmd eas-cli build -p android --profile preview   # share the APK link
 
 Play Store release (AAB):
 
     npx.cmd eas-cli build -p android --profile production
     npx.cmd eas-cli submit -p android --latest   # needs a Play developer account
 
-Apple App Store:
+iPhone / TestFlight (needs the Apple Developer Program, $99/year):
 
-    npx.cmd eas-cli build -p ios --profile production   # built on EAS cloud
-    npx.cmd eas-cli submit -p ios --latest             # needs an Apple developer
-                                                       # account ($99/year) and
-                                                       # App Store Connect keys
+    npx.cmd eas-cli build -p ios --profile production    # builds on EAS cloud
+    npx.cmd eas-cli submit -p ios --latest               # uploads to App Store Connect
+
+Then in App Store Connect -> TestFlight add the client's email as an external
+tester. They install the TestFlight app and accept the invite. The first build
+needs a short beta review (usually under a day) and a filled-in review form.
+
+Expo Go is NOT a client option on iOS: installing Expo Go itself now requires
+an Apple Developer Program subscription, and the device must be signed in to
+the same Expo account as the CLI. Use TestFlight instead.
+
+Push notifications: remote push does not work in Expo Go on Android (SDK 53+).
+Favourites reminders need a development build (eas build --profile development).
 
 Both platforms share the package/bundle id com.moontv.mobile. eas.json has
 "preview" (internal APK) and "production" (store) profiles.
@@ -282,6 +314,9 @@ NOTES
 -----
 
 USER ACCOUNTS (Supabase):
+
+    OPTIONAL FOR LAUNCH. The schema is committed (supabase/schema.sql) but no
+    app code reads it yet, so skip this until accounts/favourites ship.
 
     1. Create a project at https://supabase.com (free tier, pick the region
        closest to Nigeria, e.g. eu-west/eu-central).
