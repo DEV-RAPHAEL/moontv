@@ -71,10 +71,14 @@ export default async function ProgramDetail({ params }: { params: Promise<{ slug
 
                     <div className="programDetailLayout" style={{ display: "flex", gap: "4rem", marginTop: "4rem", flexWrap: "wrap" }}>
                         <div style={{ flex: "2 1 600px" }}>
-                            <h2 style={{ fontSize: "2rem", marginBottom: "1.5rem", fontWeight: "600", color: "white" }}>Synopsis</h2>
-                            <p style={{ color: "var(--text-secondary)", lineHeight: 1.8, fontSize: "1.15rem", marginBottom: "3rem" }}>
-                                {prog.synopsis}
-                            </p>
+                            {prog.synopsis && (
+                                <>
+                                    <h2 style={{ fontSize: "2rem", marginBottom: "1.5rem", fontWeight: "600", color: "white" }}>Synopsis</h2>
+                                    <p style={{ color: "var(--text-secondary)", lineHeight: 1.8, fontSize: "1.15rem", marginBottom: "3rem" }}>
+                                        {prog.synopsis}
+                                    </p>
+                                </>
+                            )}
 
                             {description && (
                                 <>

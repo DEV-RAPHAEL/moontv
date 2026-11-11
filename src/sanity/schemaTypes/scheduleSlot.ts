@@ -1,6 +1,14 @@
 import { defineField, defineType } from 'sanity';
 
-const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const days = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
 
 export const scheduleSlot = defineType({
   name: 'scheduleSlot',

@@ -1,3 +1,4 @@
+import { legacyDescription, legacyImageBySlug, legacyProgrammes } from './legacy';
 import { allProgrammeSlugsQuery, allProgrammesQuery, programmeBySlugQuery } from './queries';
 import { sanityFetch, urlForImage } from './sanity';
 
@@ -26,17 +27,21 @@ type SanityProgramme = {
 };
 
 export function mapProgramme(doc: SanityProgramme, index: number): Programme {
+  const slug = doc.slug?.current ?? '';
+  const description = doc.description ?? [];
+
   return {
     id: index + 1,
-    slug: doc.slug?.current ?? '',
+    slug,
     title: doc.title || 'Untitled programme',
     category: doc.category || 'UNCATEGORISED',
-    image: urlForImage(doc.thumbnail) || '/hero_bg.jpg',
+    // Sanity thumbnail wins; otherwise use the bundled asset for that programme.
+    image: urlForImage(doc.thumbnail) || legacyImageBySlug.get(slug) || '/hero_bg.jpg',
     gallery: [],
     synopsis: doc.summary || '',
     notableCast: doc.hosts || [],
     isFeatured: Boolean(doc.isFeatured),
-    description: doc.description || [],
+    description: description.length > 0 ? description : legacyDescription(slug),
   };
 }
 
@@ -46,7 +51,9 @@ export async function getAllProgrammes(): Promise<Programme[]> {
     tags: ['programmes'],
   });
 
-  return (docs ?? [])
+  if (!docs?.length) return legacyProgrammes;
+
+  return docs
     .filter((doc) => Boolean(doc.slug?.current))
     .map(mapProgramme);
 }
@@ -58,8 +65,8 @@ export async function getProgrammeBySlug(slug: string): Promise<Programme | null
     tags: ['programmes'],
   });
 
-  if (!doc?.slug?.current) return null;
-  return mapProgramme(doc, 0);
+  if (doc?.slug?.current) return mapProgramme(doc, 0);
+  return legacyProgrammes.find((programme) => programme.slug === slug) ?? null;
 }
 
 export async function getAllProgrammeSlugs(): Promise<string[]> {
@@ -67,5 +74,6 @@ export async function getAllProgrammeSlugs(): Promise<string[]> {
     query: allProgrammeSlugsQuery,
     tags: ['programmes'],
   });
-  return (slugs ?? []).filter(Boolean);
+  if (!slugs?.length) return legacyProgrammes.map((programme) => programme.slug);
+  return slugs.filter(Boolean);
 }

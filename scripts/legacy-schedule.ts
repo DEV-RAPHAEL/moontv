@@ -61,7 +61,7 @@ export function parseTimeToMinutes(timeStr: string): number {
  */
 export function parseSlotTime(slotTime: string): { start: number; end: number } {
   const parts = slotTime.split('-').map(s => s.trim());
-  let start = parseTimeToMinutes(parts[0] || '');
+  const start = parseTimeToMinutes(parts[0] || '');
   let end = parseTimeToMinutes(parts[1] || '');
   if (end < start) end += 24 * 60; // handle overnight transition
   return { start, end };

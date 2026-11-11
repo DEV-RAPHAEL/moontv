@@ -7,8 +7,9 @@ export async function GET() {
   try {
     const programmes = await getAllProgrammes();
     return NextResponse.json({ success: true, programmes });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to load programmes';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
