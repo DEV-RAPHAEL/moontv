@@ -16,7 +16,7 @@ export default function WaitlistForm() {
       const response = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: new FormData(form).get('email') }),
+        body: JSON.stringify(Object.fromEntries(new FormData(form))),
       });
       const result = await response.json();
 
@@ -37,6 +37,7 @@ export default function WaitlistForm() {
 
   return (
     <form onSubmit={handleSubmit}>
+      <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }} />
       <div className="waitlistForm">
         <input
           type="email"

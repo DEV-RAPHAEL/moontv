@@ -1,9 +1,22 @@
 import { NextResponse } from 'next/server';
 import { canSendEmail, isValidEmail, sendEmail } from '@/lib/email';
+import { getClientIp, isRateLimited } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
+    if (isRateLimited(getClientIp(request))) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
+
+    if (String(body.website ?? '').trim()) {
+      return NextResponse.json({ success: true });
+    }
+
     const firstName = String(body.firstName ?? '').trim().slice(0, 100);
     const lastName = String(body.lastName ?? '').trim().slice(0, 100);
     const email = String(body.email ?? '').trim().slice(0, 254);

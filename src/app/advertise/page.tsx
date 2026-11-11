@@ -63,12 +63,13 @@ export default function Advertise() {
                                 <li>🖥️ <strong>Digital Ads:</strong> Banner and video placements across our web and mobile apps.</li>
                             </ul>
 
-                            <button className="btn btn-green" style={{ marginTop: "3rem", padding: "1rem 2rem" }}>⬇ Download Rate Card (PDF)</button>
+                            <a href="/rate-card.pdf" download className="btn btn-green" style={{ marginTop: "3rem", padding: "1rem 2rem", display: "inline-block" }}>⬇ Download Rate Card (PDF)</a>
                         </div>
 
                         <div style={{ flex: 1, backgroundColor: "var(--bg-secondary)", borderRadius: "12px", padding: "3rem", border: "1px solid var(--border-color)" }}>
                             <h3 style={{ fontSize: "1.5rem", marginBottom: "2rem" }}>Inquire About Advertising</h3>
                             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                                <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }} />
                                 <input name="companyName" type="text" placeholder="Company Name" required maxLength={200} style={{ width: "100%", padding: "1rem", backgroundColor: "var(--bg-primary)", border: "1px solid var(--border-color)", borderRadius: "4px", color: "white" }} />
                                 <input name="email" type="email" placeholder="Email Address" required maxLength={254} style={{ width: "100%", padding: "1rem", backgroundColor: "var(--bg-primary)", border: "1px solid var(--border-color)", borderRadius: "4px", color: "white" }} />
                                 <select name="partnershipType" required defaultValue="" style={{ width: "100%", padding: "1rem", backgroundColor: "var(--bg-primary)", border: "1px solid var(--border-color)", borderRadius: "4px", color: "white" }}>

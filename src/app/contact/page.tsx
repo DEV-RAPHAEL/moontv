@@ -51,6 +51,7 @@ export default function Contact() {
 
                     <div style={{ backgroundColor: "var(--bg-secondary)", borderRadius: "12px", padding: "3rem", marginTop: "4rem", border: "1px solid var(--border-color)" }}>
                         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                            <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }} />
                             <div style={{ display: "flex", gap: "1.5rem" }}>
                                 <input name="firstName" type="text" placeholder="First Name" required maxLength={100} style={{ flex: 1, padding: "1rem", backgroundColor: "var(--bg-primary)", border: "1px solid var(--border-color)", borderRadius: "4px", color: "white" }} />
                                 <input name="lastName" type="text" placeholder="Last Name" required maxLength={100} style={{ flex: 1, padding: "1rem", backgroundColor: "var(--bg-primary)", border: "1px solid var(--border-color)", borderRadius: "4px", color: "white" }} />
