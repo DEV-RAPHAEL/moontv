@@ -83,6 +83,20 @@ export function parseSlotTime(slotTime: string): { start: number; end: number } 
   return { start, end };
 }
 
+/**
+ * Minutes since the broadcast day started at 06:00. Times before 06:00
+ * belong to the tail of the previous broadcast day, so 00:52 -> 18h52m.
+ */
+export function minutesIntoBroadcastDay(hour: number, minute: number): number {
+  return (((hour - 6 + 24) % 24) * 60) + minute;
+}
+
+/** The broadcast day a wall-clock hour belongs to; before 06:00 it is still yesterday's day. */
+export function getBroadcastDay(day: WeekDay, hour: number): WeekDay {
+  if (hour >= 6) return day;
+  return weekDays[(weekDays.indexOf(day) + 6) % 7];
+}
+
 export function enrichSlotsWithNigeriaTime(slots: ScheduleSlot[]): ScheduleSlot[] {
   const { hour, minute } = getNigeriaHourMinute();
   const currentMinutes = hour * 60 + minute;
@@ -94,13 +108,31 @@ export function enrichSlotsWithNigeriaTime(slots: ScheduleSlot[]): ScheduleSlot[
   });
 }
 
-export function getOnAirAndUpcoming(slots: ScheduleSlot[], count = 5): ScheduleSlot[] {
-  const enriched = enrichSlotsWithNigeriaTime(slots);
-  const { hour, minute } = getNigeriaHourMinute();
-  const currentMinutes = hour * 60 + minute;
+// Slot times mapped onto the broadcast day; an end at or before the start means the slot crosses 06:00.
+function broadcastRange(slotTime: string): { start: number; end: number } {
+  const { start, end } = parseSlotTime(slotTime);
+  const bStart = minutesIntoBroadcastDay(Math.floor(start / 60), start % 60);
+  let bEnd = minutesIntoBroadcastDay(Math.floor(end / 60), end % 60);
+  if (bEnd <= bStart) bEnd += 24 * 60;
+  return { start: bStart, end: bEnd };
+}
 
-  const relevant = enriched.filter((s) => (s.endMinutes ?? 0) > currentMinutes);
-  return relevant.slice(0, count);
+export function getOnAirAndUpcoming(
+  slots: ScheduleSlot[],
+  currentMinutes = minutesIntoBroadcastDay(getNigeriaHourMinute().hour, getNigeriaHourMinute().minute),
+  count = 5,
+): ScheduleSlot[] {
+  return slots
+    .map((slot) => ({ slot, ...broadcastRange(slot.time) }))
+    .filter(({ end }) => end > currentMinutes)
+    .sort((a, b) => a.start - b.start)
+    .slice(0, count)
+    .map(({ slot, start, end }) => ({
+      ...slot,
+      startMinutes: start,
+      endMinutes: end,
+      isNowPlaying: start <= currentMinutes && currentMinutes < end,
+    }));
 }
 
 export function mapScheduleSlot(doc: SanityScheduleSlot): ScheduleSlot | null {
