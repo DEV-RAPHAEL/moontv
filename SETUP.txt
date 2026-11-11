@@ -20,29 +20,6 @@ If npm/npx is blocked by the PowerShell execution policy, use npm.cmd / npx.cmd
 as shown below.
 
 
-LAUNCH CHECKLIST - WHAT IS LEFT
--------------------------------
-The code side is done: everything is committed and pushed to origin/main
-(commit 781a6da at the time of writing). npm test passes (18 tests) and
-npm run build succeeds locally. What remains needs your accounts:
-
-[ ] 1. Create/connect the Netlify site (section 8). If it is already connected,
-        confirm it picked up the push and the first deploy succeeds.
-[ ] 2. Create the Sanity project and make the dataset public (section 2).
-[ ] 3. Create .env.local locally (section 3) and add CORS (section 4).
-[ ] 4. Seed Sanity and import images/descriptions (section 5).
-[ ] 5. Verify the site locally (section 6).
-[ ] 6. Verify the Resend domain and set its keys (section 7).
-[ ] 7. Set every variable in the Netlify env list (section 8), then redeploy.
-[ ] 8. Point moontvonline.com at Netlify and fix TLS (section 9).
-        Copy existing MX/email records first or email will break.
-[ ] 9. Run the production checks (section 10).
-[ ] 10. Content: add artwork/synopsis for the 7 shows listed in section 5.
-[ ] 11. Set NEXT_PUBLIC_STREAM_URL to the provider's embeddable player URL.
-[ ] 12. Mobile only: Android APK for testers; iPhone needs the Apple Developer
-        Program ($99/year) and TestFlight (see MOBILE APP section).
-
-
 1. CODE IS PUSHED (DONE)
 ------------------------
 
