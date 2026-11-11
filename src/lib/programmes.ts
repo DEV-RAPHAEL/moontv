@@ -1,4 +1,9 @@
-import { legacyDescription, legacyImageBySlug, legacyProgrammes } from './legacy';
+import {
+  legacyDescription,
+  legacyGalleryBySlug,
+  legacyImageBySlug,
+  legacyProgrammes,
+} from './legacy';
 import { allProgrammeSlugsQuery, allProgrammesQuery, programmeBySlugQuery } from './queries';
 import { sanityFetch, urlForImage } from './sanity';
 
@@ -37,7 +42,7 @@ export function mapProgramme(doc: SanityProgramme, index: number): Programme {
     category: doc.category || 'UNCATEGORISED',
     // Sanity thumbnail wins; otherwise use the bundled asset for that programme.
     image: urlForImage(doc.thumbnail) || legacyImageBySlug.get(slug) || '/hero_bg.jpg',
-    gallery: [],
+    gallery: legacyGalleryBySlug.get(slug) ?? [],
     synopsis: doc.summary || '',
     notableCast: doc.hosts || [],
     isFeatured: Boolean(doc.isFeatured),

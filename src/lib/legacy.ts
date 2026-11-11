@@ -33,4 +33,8 @@ export const legacyImageBySlug = new Map(
   programmes.map((programme) => [programme.slug, programme.image]),
 );
 
+export const legacyGalleryBySlug = new Map(
+  programmes.map((programme) => [programme.slug, programme.gallery]),
+);
+
 export { weeklySchedule };

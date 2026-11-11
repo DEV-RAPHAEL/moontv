@@ -89,6 +89,30 @@ export default async function ProgramDetail({ params }: { params: Promise<{ slug
                                 </>
                             )}
 
+                            {prog.gallery.length > 0 && (
+                                <section style={{ marginBottom: "3.5rem" }} aria-labelledby="programme-gallery-heading">
+                                    <h2 id="programme-gallery-heading" style={{ fontSize: "2rem", marginBottom: "1.5rem", fontWeight: "600", color: "white" }}>
+                                        Gallery
+                                    </h2>
+                                    <div style={{ display: "flex", gap: "1rem", overflowX: "auto", paddingBottom: "0.75rem" }}>
+                                        {prog.gallery.map((image, index) => (
+                                            <div
+                                                key={`${image}-${index}`}
+                                                style={{ flex: "0 0 clamp(280px, 42vw, 520px)", aspectRatio: "16 / 9", borderRadius: "12px", overflow: "hidden", border: "1px solid var(--border-color)", background: "var(--bg-secondary)" }}
+                                            >
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                    src={encodeURI(image)}
+                                                    alt={`${prog.title} gallery image ${index + 1}`}
+                                                    loading="lazy"
+                                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+
                             {prog.notableCast.length > 0 && (
                                 <>
                                     <h2 style={{ fontSize: "2rem", marginBottom: "1.5rem", fontWeight: "600", color: "white" }}>Hosts</h2>
