@@ -5,11 +5,11 @@ export function buildPageMetadata(
   title: string,
   description: string,
   path: string,
-  image = '/hero_bg.jpg',
+  image = '/og',
 ): Metadata {
   const base = getSiteUrl();
   const url = new URL(path, base).toString();
-  const imageUrl = new URL(image, base).toString();
+  const images = [{ url: new URL(image, base).toString(), alt: title }];
 
   return {
     title,
@@ -21,13 +21,13 @@ export function buildPageMetadata(
       url,
       siteName: 'Moon TV',
       type: 'website',
-      images: [{ url: imageUrl, alt: title }],
+      images,
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [imageUrl],
+      images: images?.map((item) => item.url),
     },
   };
 }

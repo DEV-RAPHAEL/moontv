@@ -338,6 +338,13 @@
     margin-bottom: 3rem;
 }
 
+.broadcastQueue {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
 .scheduleGrid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -794,6 +801,10 @@
         grid-template-columns: 1fr 1fr;
     }
 
+    .broadcastQueue {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     .helloContainer {
         flex-direction: column;
     }
@@ -811,6 +822,28 @@
     .scheduleGrid,
     .helloGrid {
         grid-template-columns: 1fr;
+    }
+
+    .broadcastQueue {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x mandatory;
+        scroll-padding-inline: 0.25rem;
+        padding: 0 0.25rem 1rem;
+        margin-inline: -0.25rem;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .broadcastQueue::-webkit-scrollbar {
+        display: none;
+    }
+
+    .broadcastCard {
+        flex: 0 0 min(84%, 340px);
+        scroll-snap-align: start;
     }
 
     .footerTop {

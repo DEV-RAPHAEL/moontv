@@ -119,11 +119,11 @@ export default function Home() {
           </div>
 
           {onAirSlots.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1.5rem', marginTop: '2rem' }}>
-              {onAirSlots.map((slot, idx) => {
+            <div className="broadcastQueue">
+              {onAirSlots.slice(0, 5).map((slot, idx) => {
                 const imgSrc = slot.image || '/hero_bg.jpg';
                 return (
-                  <div key={`${slot.slug ?? slot.title}-${idx}`} style={{
+                  <div className="broadcastCard" key={`${slot.slug ?? slot.title}-${idx}`} style={{
                     backgroundColor: 'var(--bg-secondary)',
                     borderRadius: '12px',
                     border: slot.isNowPlaying ? '2px solid var(--accent-gold)' : '1px solid var(--border-color)',
