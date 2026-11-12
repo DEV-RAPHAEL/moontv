@@ -10,6 +10,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -86,6 +87,8 @@ type CardBaseProps = {
   style?: ViewStyle;
   titleStyle?: TextStyle;
   accessibilityLabel?: string;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 };
 
 function usePressScale() {
@@ -122,39 +125,44 @@ function PosterCardComponent({
   compact = false,
   style,
   accessibilityLabel,
+  isFavorite,
+  onToggleFavorite,
 }: PosterCardProps) {
   const press = usePressScale();
-  const inner = (
-    <View style={[styles.posterCard, { width }, style]}>
-      <PosterArtwork title={title} uri={image} style={[styles.posterImage, { height: width * 1.5 }]} />
-      {category ? (
-        <Text style={styles.posterCategory} numberOfLines={1}>
-          {category}
-        </Text>
-      ) : null}
+  const content = (
+    <View style={styles.posterCard}>
+      <PosterArtwork title={title} uri={image} style={[styles.posterImage, { height: width * 9 / 16 }]} />
+      {category ? <Text style={styles.posterCategory} numberOfLines={1}>{category}</Text> : null}
       <Text style={[styles.posterTitle, compact && styles.posterTitleCompact]} numberOfLines={1}>
         {title}
       </Text>
-      {host ? (
-        <Text style={styles.posterHost} numberOfLines={1}>
-          {host}
-        </Text>
-      ) : null}
+      {host ? <Text style={styles.posterHost} numberOfLines={1}>{host}</Text> : null}
     </View>
   );
+  const card = onPress ? (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? title}
+      onPress={onPress}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+    >
+      {content}
+    </Pressable>
+  ) : content;
 
-  if (!onPress) return inner;
   return (
-    <Animated.View style={press.animatedStyle}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel ?? title}
-        onPress={onPress}
-        onPressIn={press.onPressIn}
-        onPressOut={press.onPressOut}
-      >
-        {inner}
-      </Pressable>
+    <Animated.View style={onPress ? press.animatedStyle : undefined}>
+      <View style={[styles.posterCardOuter, { width }, style]}>
+        {card}
+        {onToggleFavorite ? (
+          <FavoriteToggle
+            selected={Boolean(isFavorite)}
+            onPress={onToggleFavorite}
+            style={styles.posterFavorite}
+          />
+        ) : null}
+      </View>
     </Animated.View>
   );
 }
@@ -166,7 +174,15 @@ export type WideCardProps = CardBaseProps & {
   subtitle?: string;
 };
 
-function WideCardComponent({ title, image, onPress, width, subtitle }: WideCardProps) {
+function WideCardComponent({
+  title,
+  image,
+  onPress,
+  width,
+  subtitle,
+  isFavorite,
+  onToggleFavorite,
+}: WideCardProps) {
   const press = usePressScale();
   const card = (
     <View style={[styles.wideCard, { width, height: width * 9 / 16 }]}>
@@ -181,17 +197,53 @@ function WideCardComponent({ title, image, onPress, width, subtitle }: WideCardP
       </View>
     </View>
   );
-  if (!onPress) return card;
   return (
-    <Animated.View style={press.animatedStyle}>
-      <Pressable onPress={onPress} onPressIn={press.onPressIn} onPressOut={press.onPressOut}>
-        {card}
-      </Pressable>
+    <Animated.View style={onPress ? press.animatedStyle : undefined}>
+      <View style={[styles.wideCardOuter, { width, height: width * 9 / 16 }]}>
+        {onPress ? (
+          <Pressable onPress={onPress} onPressIn={press.onPressIn} onPressOut={press.onPressOut}>
+            {card}
+          </Pressable>
+        ) : card}
+        {onToggleFavorite ? (
+          <FavoriteToggle
+            selected={Boolean(isFavorite)}
+            onPress={onToggleFavorite}
+            style={styles.wideFavorite}
+          />
+        ) : null}
+      </View>
     </Animated.View>
   );
 }
 
 export const WideCard = memo(WideCardComponent);
+
+export function FavoriteToggle({
+  selected,
+  onPress,
+  style,
+}: {
+  selected: boolean;
+  onPress: () => void;
+  style?: ViewStyle;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={selected ? 'Remove from favourites' : 'Add to favourites'}
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={({ pressed }) => [styles.favoriteToggle, style, pressed && styles.pressed]}
+    >
+      <Ionicons
+        name={selected ? 'heart' : 'heart-outline'}
+        size={21}
+        color={selected ? colors.accentGold : colors.textPrimary}
+      />
+    </Pressable>
+  );
+}
 
 export function SectionHeader({
   title,
@@ -265,6 +317,33 @@ export function Badge({
 const styles = StyleSheet.create({
   posterCard: {
     flexShrink: 0,
+  },
+  posterCardOuter: {
+    position: 'relative',
+    flexShrink: 0,
+  },
+  wideCardOuter: {
+    position: 'relative',
+  },
+  posterFavorite: {
+    position: 'absolute',
+    top: spacing.xs,
+    right: spacing.xs,
+  },
+  wideFavorite: {
+    position: 'absolute',
+    top: spacing.sm,
+    right: spacing.sm,
+  },
+  favoriteToggle: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.28)',
+    backgroundColor: 'rgba(5,11,7,0.78)',
   },
   posterImage: {
     width: '100%',

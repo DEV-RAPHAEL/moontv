@@ -5,14 +5,19 @@ public site's JSON API, so there is no separate mobile backend.
 
 ## Screens
 
+- **Launch and onboarding** — branded dark-and-gold splash screen, followed by
+  a three-step introduction on first launch.
 - **Home** — featured carousel, live/up-next, categories, programme rails, and
-  today's schedule, with pull-to-refresh.
+  today's schedule, with a landscape horizontal hero carousel and pull-to-refresh.
 - **Programmes** — searchable, category-grouped rails. Each category opens a
-  three-column grid.
+  three-column grid, ordered from categories with the most programmes to the
+  least.
 - **Schedule** — day selector and timeline, defaulting to today in Nigeria time,
   with pull-to-refresh.
 - **Programme detail** — synopsis, talent, known airings, related programmes,
-  and sharing by web URL.
+  an image gallery, saved-favourite toggle, and sharing by web URL.
+- **Favourites** — programme saves persist locally on the device and are
+  available from Home and More.
 - **Watch Live** — raised center action in the five-slot tab bar. Shows the
   configured `EXPO_PUBLIC_STREAM_URL` in a WebView, or a "Stream coming soon"
   state when no valid HTTP(S) URL is configured.

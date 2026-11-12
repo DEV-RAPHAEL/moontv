@@ -12,11 +12,13 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/splash-icon.png",
+          "image": "./assets/icon.png",
+          "imageWidth": 264,
           "resizeMode": "contain",
-          "backgroundColor": "#07120C"
+          "backgroundColor": "#050b07"
         }
       ],
+      "expo-notifications",
       "expo-image",
       "expo-font"
     ],
@@ -30,6 +32,17 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.moontv.mobile"
-    }
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "12564296-52e7-47e8-9fd9-47d1f9c5c6cd"
+      }
+    },
+    "owner": "pyraph"
   }
 }
