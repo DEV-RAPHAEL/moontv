@@ -26,7 +26,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import {
   Badge,
-  CategoryPill,
   FavoriteToggle,
   PosterCard,
   PosterArtwork,
@@ -56,7 +55,6 @@ export default function HomeScreen() {
   const { data, error, loading, refreshing, refresh, retry } = useRequest(loadHome);
   const { favorites, isFavorite, toggleFavorite } = useFavorites();
   const taste = useTaste();
-  const [category, setCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const openProgramme = useCallback((slug: string) => {
     router.push({ pathname: '/programme/[slug]', params: { slug } });
@@ -74,11 +72,7 @@ export default function HomeScreen() {
   const programmes = data?.programmes ?? [];
   const schedule = data?.schedule;
   const current = schedule ? getScheduleNow(schedule) : null;
-  const categories = [...new Set(programmes.map((item) => item.category).filter(Boolean))].sort();
-  const categoryProgrammes = category === 'All'
-    ? programmes
-    : programmes.filter((programme) => programme.category === category);
-  const latest = [...categoryProgrammes].sort((a, b) => b.id - a.id).slice(0, 12);
+  const latest = [...programmes].sort((a, b) => b.id - a.id).slice(0, 12);
   const featured = programmes.filter((programme) => programme.isFeatured);
   const hasPoster = (programme: Programme) =>
     Boolean(programme.image) && !programme.image.endsWith('hero_bg.jpg');
@@ -193,30 +187,6 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        {categories.length ? (
-          <View style={styles.section}>
-            <SectionHeader
-              title="Categories"
-              onSeeAll={() => router.push('/(tabs)/programmes')}
-            />
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.categoryRail}
-            >
-              <CategoryPill label="All" selected={category === 'All'} onPress={() => setCategory('All')} />
-              {categories.map((item) => (
-                <CategoryPill
-                  key={item}
-                  label={item}
-                  selected={category === item}
-                  onPress={() => setCategory(item)}
-                />
-              ))}
-            </ScrollView>
-          </View>
-        ) : null}
-
         {pickedForYou.length ? (
           <View style={styles.section}>
             <SectionHeader title="Picked for you" />
@@ -272,7 +242,7 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        {categoryProgrammes.length ? (
+        {programmes.length ? (
           <View style={styles.section}>
             <SectionHeader title="Latest Programmes" />
             <FlatList
@@ -675,7 +645,6 @@ const styles = StyleSheet.create({
   liveCardCategory: { color: colors.textSecondary, fontSize: 11, marginTop: 2 },
   progressTrack: { height: 3, backgroundColor: 'rgba(255,255,255,0.24)' },
   progressFill: { height: 3, backgroundColor: colors.accentGold },
-  categoryRail: { paddingHorizontal: spacing.md, gap: spacing.sm },
   posterRail: { paddingHorizontal: spacing.md, gap: spacing.sm },
   scheduleList: { paddingHorizontal: spacing.md, gap: spacing.xs },
   compactRow: {
