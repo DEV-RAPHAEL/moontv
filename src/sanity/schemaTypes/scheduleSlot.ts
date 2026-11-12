@@ -20,7 +20,19 @@ export const scheduleSlot = defineType({
       title: 'Programme',
       type: 'reference',
       to: [{ type: 'programme' }],
-      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'title',
+      title: 'Standalone title',
+      type: 'string',
+      description: 'Use for schedule blocks without a programme reference, such as playlists or movie blocks.',
+      hidden: ({ parent }) => Boolean(parent?.programme),
+    }),
+    defineField({
+      name: 'category',
+      title: 'Standalone category',
+      type: 'string',
+      hidden: ({ parent }) => Boolean(parent?.programme),
     }),
     defineField({
       name: 'day',
@@ -67,11 +79,12 @@ export const scheduleSlot = defineType({
   preview: {
     select: {
       title: 'programme.title',
+      standaloneTitle: 'title',
       subtitle: 'day',
       description: 'startTime',
     },
-    prepare: ({ title, subtitle, description }) => ({
-      title: title || 'Untitled slot',
+    prepare: ({ title, standaloneTitle, subtitle, description }) => ({
+      title: title || standaloneTitle || 'Untitled slot',
       subtitle: `${subtitle || ''} ${description || ''}`.trim(),
     }),
   },

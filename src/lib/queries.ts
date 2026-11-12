@@ -36,6 +36,8 @@ export const weeklyScheduleQuery = groq`
     endTime,
     isLive,
     notes,
+    title,
+    category,
     programme-> {
       title,
       slug,

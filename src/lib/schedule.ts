@@ -5,6 +5,7 @@
 
 import { weeklyScheduleQuery } from './queries';
 import { sanityFetch, urlForImage } from './sanity';
+import { weeklySchedule as legacyWeeklySchedule } from '../../scripts/legacy-schedule';
 
 export const weekDays = [
   'Monday',
@@ -35,6 +36,8 @@ type SanityScheduleSlot = {
   day?: string | null;
   startTime?: string | null;
   endTime?: string | null;
+  title?: string | null;
+  category?: string | null;
   isLive?: boolean | null;
   notes?: string | null;
   programme?: {
@@ -137,13 +140,14 @@ export function getOnAirAndUpcoming(
 
 export function mapScheduleSlot(doc: SanityScheduleSlot): ScheduleSlot | null {
   const slug = doc.programme?.slug?.current;
-  if (!slug || !doc.startTime || !doc.endTime) return null;
+  const title = doc.programme?.title || doc.title;
+  if (!title || !doc.startTime || !doc.endTime) return null;
 
   return {
     time: `${doc.startTime} - ${doc.endTime}`,
-    title: doc.programme?.title || 'Untitled programme',
-    category: doc.programme?.category || 'UNCATEGORISED',
-    slug,
+    title,
+    category: doc.programme?.category || doc.category || 'UNCATEGORISED',
+    ...(slug ? { slug } : {}),
     notes: doc.notes || '',
     isLive: Boolean(doc.isLive),
     image: urlForImage(doc.programme?.thumbnail) || '/hero_bg.jpg',
@@ -176,6 +180,12 @@ export async function getWeeklySchedule(): Promise<Record<WeekDay, ScheduleSlot[
     if (!doc.day || !(weekDays as readonly string[]).includes(doc.day)) continue;
     const slot = mapScheduleSlot(doc);
     if (slot) week[doc.day as WeekDay].push(slot);
+  }
+
+  if (!weekDays.some((day) => week[day].length > 0)) {
+    return Object.fromEntries(
+      weekDays.map((day) => [day, legacyWeeklySchedule[day] ?? []]),
+    ) as Record<WeekDay, ScheduleSlot[]>;
   }
 
   for (const day of weekDays) {
