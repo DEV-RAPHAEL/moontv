@@ -1,0 +1,21 @@
+# EAS archives the whole git repo for a mobile build. Everything here is either
+# installed by EAS, regenerated on the build machine, or a local secret.
+node_modules/
+.next/
+out/
+build/
+coverage/
+.expo/
+dist/
+web-build/
+.git/
+.vercel/
+moontv-mobile/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+.env*
+!.env.example
+db_store.json
