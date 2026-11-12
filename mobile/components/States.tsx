@@ -1,5 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing } from '../lib/theme';
+import { colors, spacing } from '../lib/theme';
 
 export function LoadingState({ label = 'Loading…' }: { label?: string }) {
   return (
@@ -12,19 +13,25 @@ export function LoadingState({ label = 'Loading…' }: { label?: string }) {
 export function ErrorState({
   message,
   onRetry,
+  title = 'Couldn’t load Moon TV',
 }: {
   message: string;
   onRetry: () => void;
+  title?: string;
 }) {
   return (
     <View style={styles.centered}>
-      <Text style={styles.errorTitle}>Could not load content</Text>
+      <View style={styles.iconBadge}>
+        <Ionicons name="cloud-offline-outline" size={38} color={colors.accentGold} />
+      </View>
+      <Text style={styles.errorTitle}>{title}</Text>
       <Text style={styles.muted}>{message}</Text>
       <Pressable
         accessibilityRole="button"
         onPress={onRetry}
         style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
       >
+        <Ionicons name="refresh" size={17} color={colors.textPrimary} />
         <Text style={styles.buttonLabel}>Try again</Text>
       </Pressable>
     </View>
@@ -44,27 +51,44 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.lg,
-    gap: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    gap: spacing.md,
+  },
+  iconBadge: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.bgSecondary,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.xs,
   },
   errorTitle: {
     color: colors.textPrimary,
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     textAlign: 'center',
   },
   muted: {
     color: colors.textSecondary,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 14,
+    lineHeight: 21,
     textAlign: 'center',
+    maxWidth: 300,
   },
   button: {
     marginTop: spacing.sm,
-    backgroundColor: colors.buttonGreen,
-    paddingVertical: spacing.sm,
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
     paddingHorizontal: spacing.lg,
-    borderRadius: radius.sm,
+    borderRadius: 999,
+    backgroundColor: colors.buttonGreen,
   },
   buttonPressed: {
     backgroundColor: colors.buttonGreenHover,
@@ -72,6 +96,6 @@ const styles = StyleSheet.create({
   buttonLabel: {
     color: colors.textPrimary,
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

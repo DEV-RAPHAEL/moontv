@@ -11,13 +11,14 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Badge, CategoryPill, PosterArtwork, SkeletonBlock } from '../../components/StreamingUI';
+import { ErrorState } from '../../components/States';
 import { fetchSchedule, nigeriaToday } from '../../lib/api';
 import { getScheduleNow, getSlotWindow } from '../../lib/schedule-now';
 import { colors, radius, spacing } from '../../lib/theme';
 import { WEEK_DAYS, type ScheduleResponse, type ScheduleSlot, type WeekDay } from '../../lib/types';
 import { useRequest } from '../../lib/useRequest';
 
-const loadSchedule = () => fetchSchedule();
+const loadSchedule = () => fetchSchedule(true);
 
 export default function ScheduleScreen() {
   const insets = useSafeAreaInsets();
@@ -46,11 +47,11 @@ export default function ScheduleScreen() {
   if (error || !data) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.error}>
-          <Text style={styles.heading}>Schedule unavailable</Text>
-          <Text style={styles.muted}>{error ?? 'No schedule data is available.'}</Text>
-          <Pressable onPress={retry} style={styles.retry}><Text style={styles.retryText}>Try again</Text></Pressable>
-        </View>
+        <ErrorState
+          title="Schedule unavailable"
+          message={error ?? 'No schedule data is available.'}
+          onRetry={retry}
+        />
       </SafeAreaView>
     );
   }
@@ -134,7 +135,7 @@ function TimelineRow({ slot, current }: { slot: ScheduleSlot; current: boolean }
   const start = slot.time.split(/\s*[-–—]\s*/)[0] ?? '';
   const duration = window ? window.end - window.start : 0;
   const end = window && duration > 0 ? `${Math.floor((window.end % 1440) / 60) % 12 || 12}:${String(window.end % 60).padStart(2, '0')}` : '';
-  const posterStyle = { width: 68, height: 90, borderRadius: radius.md };
+  const posterStyle = { width: 90, height: 90 * 9 / 16, borderRadius: radius.md };
   const content = (
     <>
       <View style={styles.timeColumn}>
@@ -209,8 +210,5 @@ const styles = StyleSheet.create({
   emptyTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: '700', textAlign: 'center' },
   muted: { color: colors.textSecondary, fontSize: 13, lineHeight: 20, textAlign: 'center' },
   skeleton: { flex: 1, padding: spacing.md, gap: spacing.md },
-  error: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing.xl, gap: spacing.md },
-  retry: { minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.lg, borderRadius: radius.md, backgroundColor: colors.buttonGreen },
-  retryText: { color: colors.textPrimary, fontWeight: '700' },
   pressed: { opacity: 0.78 },
 });

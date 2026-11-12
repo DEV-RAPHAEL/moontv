@@ -33,7 +33,7 @@ export type ScheduleSlot = {
 
 export type ScheduleResponse = {
   day: string;
-  nigeriaTime: string;
+  nigeriaTime?: string;
   slots: ScheduleSlot[];
   week?: Partial<Record<WeekDay, ScheduleSlot[]>>;
 };

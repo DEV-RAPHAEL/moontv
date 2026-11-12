@@ -1,5 +1,5 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -15,7 +15,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Badge, PosterArtwork, PosterCard, SectionHeader, SkeletonBlock } from '../../components/StreamingUI';
+import { Badge, FavoriteToggle, PosterArtwork, PosterCard, SectionHeader, SkeletonBlock } from '../../components/StreamingUI';
 import { EmptyState, ErrorState } from '../../components/States';
 import {
   fetchProgrammes,
@@ -25,12 +25,14 @@ import {
   portableTextToPlainText,
 } from '../../lib/api';
 import { getScheduleNow } from '../../lib/schedule-now';
+import { useFavorites } from '../../lib/FavoritesContext';
+import { recordProgrammeView } from '../../lib/taste';
 import { colors, radius, spacing } from '../../lib/theme';
 import { WEEK_DAYS, type Programme } from '../../lib/types';
 import { useRequest } from '../../lib/useRequest';
 
 const loadData = async () => {
-  const [programmes, schedule] = await Promise.all([fetchProgrammes(), fetchSchedule()]);
+  const [programmes, schedule] = await Promise.all([fetchProgrammes(), fetchSchedule(true)]);
   return { programmes, schedule };
 };
 
@@ -48,10 +50,15 @@ export default function ProgrammeScreen() {
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const request = useCallback(loadData, []);
   const { data, error, loading, refreshing, refresh, retry } = useRequest(request);
   const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    if (slug) void recordProgrammeView(slug);
+  }, [slug]);
   const programme = data?.programmes.find((item) => item.slug === slug) ?? null;
+  const gallery = programme?.gallery ?? [];
   const streamUrl = getStreamUrl();
   const scheduleNow = useMemo(
     () => data ? getScheduleNow(data.schedule) : null,
@@ -145,14 +152,20 @@ export default function ProgrammeScreen() {
             >
               <Ionicons name="arrow-back" size={21} color={colors.textPrimary} />
             </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Share programme"
-              onPress={() => void shareProgramme()}
-              style={styles.circleButton}
-            >
-              <Ionicons name="share-outline" size={20} color={colors.textPrimary} />
-            </Pressable>
+            <View style={styles.actionGroup}>
+              <FavoriteToggle
+                selected={isFavorite(programme.slug)}
+                onPress={() => toggleFavorite(programme.slug)}
+              />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Share programme"
+                onPress={() => void shareProgramme()}
+                style={styles.circleButton}
+              >
+                <Ionicons name="share-outline" size={20} color={colors.textPrimary} />
+              </Pressable>
+            </View>
           </View>
           <View style={styles.backdropTitle}>
             <Badge label={isLive ? 'LIVE NOW' : programme.isFeatured ? 'FEATURED' : programme.category} tone={isLive ? 'live' : 'accent'} />
@@ -186,6 +199,31 @@ export default function ProgrammeScreen() {
                   <Text style={styles.readMoreText}>{expanded ? 'Read less' : 'Read more'}</Text>
                 </Pressable>
               ) : null}
+            </View>
+          ) : null}
+
+          {gallery.length ? (
+            <View style={styles.section}>
+              <SectionHeader title="Gallery" />
+              <FlatList
+                horizontal
+                data={gallery}
+                keyExtractor={(image, index) => `${image}-${index}`}
+                renderItem={({ item, index }) => (
+                  <View style={[styles.galleryImage, { width: width * 0.78, height: width * 0.78 * 9 / 16 }]}>
+                    <PosterArtwork
+                      title={`${programme.title} — image ${index + 1}`}
+                      uri={item}
+                      style={StyleSheet.absoluteFill}
+                    />
+                  </View>
+                )}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.galleryRail}
+                initialNumToRender={2}
+                maxToRenderPerBatch={2}
+                windowSize={3}
+              />
             </View>
           ) : null}
 
@@ -237,6 +275,8 @@ export default function ProgrammeScreen() {
                   title={item.title}
                   image={item.image}
                   compact
+                  isFavorite={isFavorite(item.slug)}
+                  onToggleFavorite={() => toggleFavorite(item.slug)}
                   onPress={() => router.replace({ pathname: '/programme/[slug]', params: { slug: item.slug } })}
                 />
               )}
@@ -271,7 +311,8 @@ const styles = StyleSheet.create({
   state: { flex: 1, backgroundColor: colors.bgPrimary },
   loadingContent: { padding: spacing.md, gap: spacing.md },
   backdrop: { width: '100%', justifyContent: 'flex-end', backgroundColor: colors.bgTertiary },
-  floatingActions: { position: 'absolute', left: spacing.md, right: spacing.md, flexDirection: 'row', justifyContent: 'space-between' },
+  floatingActions: { position: 'absolute', left: spacing.md, right: spacing.md, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  actionGroup: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   circleButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 22, backgroundColor: 'rgba(5,11,7,0.72)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
   backdropTitle: { paddingHorizontal: spacing.md, paddingBottom: spacing.lg, gap: spacing.sm },
   title: { color: colors.textPrimary, fontSize: 26, lineHeight: 32, fontWeight: '800' },
@@ -282,6 +323,8 @@ const styles = StyleSheet.create({
   pill: { minHeight: 32, justifyContent: 'center', paddingHorizontal: spacing.md, borderRadius: 999, backgroundColor: colors.bgSecondary, borderWidth: 1, borderColor: colors.border },
   pillText: { color: colors.textSecondary, fontSize: 11, fontWeight: '600', textTransform: 'capitalize' },
   section: { gap: spacing.sm },
+  galleryRail: { paddingHorizontal: spacing.md, gap: spacing.sm },
+  galleryImage: { overflow: 'hidden', borderRadius: radius.lg, backgroundColor: colors.bgTertiary },
   synopsis: { paddingHorizontal: spacing.md, color: colors.textSecondary, fontSize: 14, lineHeight: 22 },
   readMore: { alignSelf: 'flex-start', marginLeft: spacing.md, minHeight: 44, justifyContent: 'center' },
   readMoreText: { color: colors.accentGold, fontSize: 13, fontWeight: '700' },

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
   Pressable,
@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -26,14 +27,18 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   Badge,
   CategoryPill,
+  FavoriteToggle,
   PosterCard,
   PosterArtwork,
   SectionHeader,
   SkeletonBlock,
   WideCard,
 } from '../../components/StreamingUI';
+import { ErrorState } from '../../components/States';
 import { fetchProgrammes, fetchSchedule, resolveImageUrl } from '../../lib/api';
 import { getScheduleNow } from '../../lib/schedule-now';
+import { useFavorites } from '../../lib/FavoritesContext';
+import { pickForYou, useTaste } from '../../lib/taste';
 import { colors, radius, spacing } from '../../lib/theme';
 import type { Programme, ScheduleSlot } from '../../lib/types';
 import { useRequest } from '../../lib/useRequest';
@@ -43,12 +48,16 @@ const loadHome = async () => {
   return { programmes, schedule };
 };
 
-const AnimatedProgrammeList = Animated.createAnimatedComponent(FlatList<Programme>);
+type CarouselEntry = { key: string; programme: Programme };
+const AnimatedProgrammeList = Animated.createAnimatedComponent(FlatList<CarouselEntry>);
 
 export default function HomeScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const { data, error, loading, refreshing, refresh, retry } = useRequest(loadHome);
+  const { favorites, isFavorite, toggleFavorite } = useFavorites();
+  const taste = useTaste();
   const [category, setCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const openProgramme = useCallback((slug: string) => {
     router.push({ pathname: '/programme/[slug]', params: { slug } });
   }, []);
@@ -57,13 +66,7 @@ export default function HomeScreen() {
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.error}>
-          <Text style={styles.errorTitle}>Couldn’t load Moon TV</Text>
-          <Text style={styles.muted}>{error}</Text>
-          <Pressable onPress={retry} style={styles.retry}>
-            <Text style={styles.retryText}>Try again</Text>
-          </Pressable>
-        </View>
+        <ErrorState message={error} onRetry={retry} />
       </SafeAreaView>
     );
   }
@@ -81,6 +84,8 @@ export default function HomeScreen() {
     Boolean(programme.image) && !programme.image.endsWith('hero_bg.jpg');
   const carouselItems = (featured.length ? featured : programmes.filter(hasPoster))
     .slice(0, 6);
+  const favoriteProgrammes = programmes.filter((programme) => favorites.includes(programme.slug));
+  const pickedForYou = pickForYou(programmes, favorites, taste);
   const nowAndNext = [current?.currentSlot, current?.nextSlot]
     .filter((slot): slot is ScheduleSlot => Boolean(slot));
 
@@ -105,15 +110,55 @@ export default function HomeScreen() {
             />
             <Text style={styles.brand}>MOON TV</Text>
           </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Watch live"
-            onPress={() => router.push('/watch')}
-            style={({ pressed }) => [styles.livePill, pressed && styles.pressed]}
-          >
-            <View style={styles.liveDot} />
-            <Text style={styles.liveLabel}>LIVE</Text>
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Watch live"
+              onPress={() => router.push('/watch')}
+              style={({ pressed }) => [styles.livePill, pressed && styles.pressed]}
+            >
+              <View style={styles.liveDot} />
+              <Text style={styles.liveLabel}>LIVE</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Sign in to Moon TV"
+              onPress={() => router.push('/account')}
+              style={({ pressed }) => [styles.accountButton, pressed && styles.pressed]}
+            >
+              <Ionicons name="person-outline" size={20} color={colors.textPrimary} />
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={[styles.searchBar, styles.headerInset]}>
+          <Ionicons name="search" size={19} color={colors.textSecondary} />
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={() => {
+              const query = searchQuery.trim();
+              if (query) router.push({ pathname: '/(tabs)/programmes', params: { search: query } });
+            }}
+            placeholder="Search programmes, stories..."
+            placeholderTextColor={colors.textSecondary}
+            returnKeyType="search"
+            accessibilityLabel="Search programmes"
+            style={styles.searchInput}
+          />
+          {searchQuery ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Search"
+              onPress={() => {
+                const query = searchQuery.trim();
+                if (query) router.push({ pathname: '/(tabs)/programmes', params: { search: query } });
+              }}
+              style={styles.searchSubmit}
+            >
+              <Ionicons name="arrow-forward" size={18} color={colors.accentGold} />
+            </Pressable>
+          ) : null}
         </View>
 
         {carouselItems.length ? (
@@ -121,6 +166,8 @@ export default function HomeScreen() {
             programmes={carouselItems}
             screenWidth={screenWidth}
             onPress={openProgramme}
+            isFavorite={isFavorite}
+            toggleFavorite={toggleFavorite}
           />
         ) : null}
 
@@ -170,6 +217,61 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
+        {pickedForYou.length ? (
+          <View style={styles.section}>
+            <SectionHeader title="Picked for you" />
+            <FlatList
+              horizontal
+              data={pickedForYou}
+              keyExtractor={(programme) => programme.slug}
+              renderItem={({ item: programme }) => (
+                <PosterCard
+                  width={screenWidth * 0.62}
+                  title={programme.title}
+                  image={programme.image}
+                  category={programme.category}
+                  compact
+                  isFavorite={isFavorite(programme.slug)}
+                  onToggleFavorite={() => toggleFavorite(programme.slug)}
+                  onPress={() => openProgramme(programme.slug)}
+                />
+              )}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.posterRail}
+              initialNumToRender={4}
+              maxToRenderPerBatch={4}
+              windowSize={3}
+            />
+          </View>
+        ) : null}
+
+        {favoriteProgrammes.length ? (
+          <View style={styles.section}>
+            <SectionHeader title="Your favourites" onSeeAll={() => router.push('/favorites')} />
+            <FlatList
+              horizontal
+              data={favoriteProgrammes}
+              keyExtractor={(programme) => programme.slug}
+              renderItem={({ item: programme }) => (
+                <PosterCard
+                  width={screenWidth * 0.62}
+                  title={programme.title}
+                  image={programme.image}
+                  compact
+                  isFavorite={isFavorite(programme.slug)}
+                  onToggleFavorite={() => toggleFavorite(programme.slug)}
+                  onPress={() => openProgramme(programme.slug)}
+                />
+              )}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.posterRail}
+              initialNumToRender={4}
+              maxToRenderPerBatch={4}
+              windowSize={3}
+            />
+          </View>
+        ) : null}
+
         {categoryProgrammes.length ? (
           <View style={styles.section}>
             <SectionHeader title="Latest Programmes" />
@@ -179,10 +281,12 @@ export default function HomeScreen() {
               keyExtractor={(programme) => programme.slug}
               renderItem={({ item: programme }) => (
                 <PosterCard
-                  width={screenWidth * 0.34}
+                  width={screenWidth * 0.62}
                   title={programme.title}
                   image={programme.image}
                   compact
+                  isFavorite={isFavorite(programme.slug)}
+                  onToggleFavorite={() => toggleFavorite(programme.slug)}
                   onPress={() => openProgramme(programme.slug)}
                 />
               )}
@@ -208,6 +312,8 @@ export default function HomeScreen() {
                   title={programme.title}
                   image={programme.image}
                   subtitle={programme.category}
+                  isFavorite={isFavorite(programme.slug)}
+                  onToggleFavorite={() => toggleFavorite(programme.slug)}
                   onPress={() => openProgramme(programme.slug)}
                 />
               )}
@@ -243,15 +349,16 @@ export default function HomeScreen() {
 }
 
 function HomeSkeleton() {
+  const { width } = useWindowDimensions();
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={[styles.page, styles.skeletonPage]}>
         <SkeletonBlock style={{ height: 48, width: '100%' }} />
-        <SkeletonBlock style={{ height: 390, width: '100%', borderRadius: 20 }} />
+        <SkeletonBlock style={{ height: (width - spacing.md * 2) * 9 / 16, width: '100%', borderRadius: 20 }} />
         <SkeletonBlock style={{ height: 24, width: '55%' }} />
         <View style={styles.posterRail}>
           {[0, 1, 2].map((item) => (
-            <SkeletonBlock key={item} style={{ width: 120, height: 190 }} />
+            <SkeletonBlock key={item} style={{ width: 220, height: 220 * 9 / 16 }} />
           ))}
         </View>
         <SkeletonBlock style={{ height: 24, width: '45%' }} />
@@ -269,44 +376,69 @@ function FeaturedCarousel({
   programmes,
   screenWidth,
   onPress,
+  isFavorite,
+  toggleFavorite,
 }: {
   programmes: Programme[];
   screenWidth: number;
   onPress: (slug: string) => void;
+  isFavorite: (slug: string) => boolean;
+  toggleFavorite: (slug: string) => void;
 }) {
   const reducedMotion = useReducedMotion();
   const scrollX = useSharedValue(0);
-  const cardWidth = Math.min(screenWidth * 0.58, 280);
+  const cardWidth = Math.min(screenWidth * 0.92, 560);
   const gap = spacing.md;
   const interval = cardWidth + gap;
   const sidePadding = (screenWidth - cardWidth) / 2;
+  const listRef = useRef<FlatList<CarouselEntry>>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const entries = useMemo<CarouselEntry[]>(
+    () => (programmes.length > 1 ? [0, 1, 2] : [1]).flatMap((copy) =>
+      programmes.map((programme) => ({
+        key: `${programme.slug}-${copy}`,
+        programme,
+      })),
+    ),
+    [programmes],
+  );
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollX.value = event.contentOffset.x;
     },
   });
   const onMomentumEnd = useCallback((event: { nativeEvent: { contentOffset: { x: number } } }) => {
-    setActiveIndex(Math.max(0, Math.min(programmes.length - 1, Math.round(event.nativeEvent.contentOffset.x / interval))));
-  }, [interval, programmes.length]);
-  const renderItem = useCallback(({ item, index }: { item: Programme; index: number }) => (
+    const physicalIndex = Math.max(0, Math.round(event.nativeEvent.contentOffset.x / interval));
+    const active = physicalIndex % programmes.length;
+    setActiveIndex(active);
+    if (programmes.length > 1 && (physicalIndex < programmes.length || physicalIndex >= programmes.length * 2)) {
+      const centeredIndex = programmes.length + active;
+      const offset = interval * centeredIndex;
+      scrollX.value = offset;
+      listRef.current?.scrollToOffset({ offset, animated: false });
+    }
+  }, [interval, programmes.length, scrollX]);
+  const renderItem = useCallback(({ item, index }: { item: CarouselEntry; index: number }) => (
     <CarouselItem
-      item={item}
+      item={item.programme}
       index={index}
       width={cardWidth}
       interval={interval}
       scrollX={scrollX}
       reducedMotion={reducedMotion}
-      onPress={() => onPress(item.slug)}
+      onPress={() => onPress(item.programme.slug)}
+      isFavorite={isFavorite(item.programme.slug)}
+      onToggleFavorite={() => toggleFavorite(item.programme.slug)}
     />
-  ), [cardWidth, interval, onPress, reducedMotion, scrollX]);
+  ), [cardWidth, interval, isFavorite, onPress, reducedMotion, scrollX, toggleFavorite]);
 
   return (
     <View style={styles.carousel}>
       <AnimatedProgrammeList
+        ref={listRef}
         horizontal
-        data={programmes}
-        keyExtractor={(item) => item.slug}
+        data={entries}
+        keyExtractor={(item) => item.key}
         renderItem={renderItem}
         onScroll={onScroll}
         onMomentumScrollEnd={onMomentumEnd}
@@ -316,6 +448,7 @@ function FeaturedCarousel({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: sidePadding }}
         getItemLayout={(_, index) => ({ length: interval, offset: interval * index, index })}
+        initialScrollIndex={programmes.length > 1 ? programmes.length : 0}
         initialNumToRender={3}
         maxToRenderPerBatch={4}
         windowSize={3}
@@ -339,6 +472,8 @@ function CarouselItem({
   scrollX,
   reducedMotion,
   onPress,
+  isFavorite,
+  onToggleFavorite,
 }: {
   item: Programme;
   index: number;
@@ -347,6 +482,8 @@ function CarouselItem({
   scrollX: SharedValue<number>;
   reducedMotion: boolean;
   onPress: () => void;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
 }) {
   const style = useAnimatedStyle(() => {
     if (reducedMotion) return { transform: [{ scale: 1 }], opacity: 1 };
@@ -359,13 +496,33 @@ function CarouselItem({
 
   return (
     <Animated.View style={[style, { width, marginRight: spacing.md }]}>
-      <PosterCard
-        width={width}
-        title={item.title}
-        image={item.image}
-        category={item.category}
-        onPress={onPress}
-      />
+      <View style={[styles.heroCard, { height: width * 9 / 16 }]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`View ${item.title}`}
+          onPress={onPress}
+          style={StyleSheet.absoluteFill}
+        >
+          <PosterArtwork title={item.title} uri={item.image} style={StyleSheet.absoluteFill} />
+          <LinearGradient
+            colors={['rgba(5,11,7,0.02)', 'rgba(5,11,7,0.16)', 'rgba(5,11,7,0.92)']}
+            locations={[0, 0.42, 1]}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.heroCopy}>
+            <Text style={styles.heroCategory} numberOfLines={1}>{item.category}</Text>
+            <Text style={styles.heroTitle} numberOfLines={2}>{item.title}</Text>
+            {item.synopsis ? (
+              <Text style={styles.heroSynopsis} numberOfLines={2}>{item.synopsis}</Text>
+            ) : null}
+          </View>
+        </Pressable>
+        <FavoriteToggle
+          selected={isFavorite}
+          onPress={onToggleFavorite}
+          style={styles.heroFavorite}
+        />
+      </View>
     </Animated.View>
   );
 }
@@ -447,6 +604,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  accountButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bgSecondary,
+  },
+  searchBar: {
+    minHeight: 52,
+    paddingHorizontal: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bgSecondary,
+  },
+  searchInput: { flex: 1, minHeight: 48, color: colors.textPrimary, fontSize: 14 },
+  searchSubmit: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   brandLockup: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   logo: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.bgTertiary },
   brand: { color: colors.textPrimary, fontSize: 16, fontWeight: '800', letterSpacing: 1.1 },
@@ -464,6 +645,24 @@ const styles = StyleSheet.create({
   liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#dc4d4d' },
   liveLabel: { color: colors.textPrimary, fontSize: 11, fontWeight: '800', letterSpacing: 0.7 },
   carousel: { gap: spacing.md },
+  heroCard: {
+    overflow: 'hidden',
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bgTertiary,
+  },
+  heroCopy: {
+    position: 'absolute',
+    left: spacing.md,
+    right: 68,
+    bottom: spacing.md,
+    gap: spacing.xs,
+  },
+  heroCategory: { color: colors.accentGold, fontSize: 10, fontWeight: '800', letterSpacing: 1.4 },
+  heroTitle: { color: colors.textPrimary, fontSize: 25, lineHeight: 30, fontWeight: '800' },
+  heroSynopsis: { color: '#e1e8e2', fontSize: 12, lineHeight: 17 },
+  heroFavorite: { position: 'absolute', top: spacing.sm, right: spacing.sm },
   dots: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.border },
   dotActive: { width: 20, backgroundColor: colors.accentGold },
@@ -494,9 +693,4 @@ const styles = StyleSheet.create({
   compactText: { flex: 1, gap: 3 },
   compactTitle: { color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
   compactCategory: { color: colors.textSecondary, fontSize: 11 },
-  error: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md },
-  errorTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: '700' },
-  muted: { color: colors.textSecondary, textAlign: 'center' },
-  retry: { minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.lg, borderRadius: radius.md, backgroundColor: colors.buttonGreen },
-  retryText: { color: colors.textPrimary, fontWeight: '700' },
 });

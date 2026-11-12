@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
   Pressable,
@@ -13,36 +13,48 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { EmptyState } from '../../components/States';
+import { EmptyState, ErrorState } from '../../components/States';
 import { PosterCard, SectionHeader, SkeletonBlock } from '../../components/StreamingUI';
 import { fetchProgrammes } from '../../lib/api';
 import { colors, spacing } from '../../lib/theme';
+import { useFavorites } from '../../lib/FavoritesContext';
 import type { Programme } from '../../lib/types';
 import { useRequest } from '../../lib/useRequest';
 
 const loadProgrammes = () => fetchProgrammes();
 
 export default function ProgrammesScreen() {
+  const params = useLocalSearchParams<{ search?: string | string[] }>();
+  const routeSearch = Array.isArray(params.search) ? params.search[0] : params.search;
   const { width } = useWindowDimensions();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const { data, error, loading, refreshing, refresh, retry } = useRequest(loadProgrammes);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [search, setSearch] = useState('');
+  const [searchOpen, setSearchOpen] = useState(Boolean(routeSearch));
+  const [search, setSearch] = useState(routeSearch ?? '');
+  useEffect(() => {
+    if (routeSearch === undefined) return;
+    setSearch(routeSearch);
+    setSearchOpen(true);
+  }, [routeSearch]);
   const filtered = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     return (data ?? []).filter((item) => item.title.toLocaleLowerCase().includes(query));
   }, [data, search]);
-  const categories = [...new Set(filtered.map((item) => item.category).filter(Boolean))].sort();
-  const posterWidth = width * 0.34;
+  const categories = [...filtered.reduce((counts, item) => {
+    counts.set(item.category, (counts.get(item.category) ?? 0) + 1);
+    return counts;
+  }, new Map<string, number>())]
+    .sort(([categoryA, countA], [categoryB, countB]) =>
+      countB - countA || categoryA.localeCompare(categoryB),
+    )
+    .map(([category]) => category);
+  const posterWidth = width * 0.62;
 
   if (loading) return <ProgrammesSkeleton />;
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.center}>
-          <Text style={styles.errorTitle}>Couldn’t load programmes</Text>
-          <Text style={styles.muted}>{error}</Text>
-          <Pressable onPress={retry} style={styles.retry}><Text style={styles.retryText}>Try again</Text></Pressable>
-        </View>
+        <ErrorState message={error} onRetry={retry} />
       </SafeAreaView>
     );
   }
@@ -100,6 +112,8 @@ export default function ProgrammesScreen() {
                     image={programme.image}
                     host={programme.notableCast[0]}
                     compact
+                    isFavorite={isFavorite(programme.slug)}
+                    onToggleFavorite={() => toggleFavorite(programme.slug)}
                     onPress={() => router.push({ pathname: '/programme/[slug]', params: { slug: programme.slug } })}
                   />
                 )}
@@ -126,7 +140,7 @@ function ProgrammesSkeleton() {
           <View key={section} style={styles.skeletonSection}>
             <SkeletonBlock style={{ height: 28, width: '52%' }} />
             <View style={styles.rail}>
-              {[0, 1, 2].map((card) => <SkeletonBlock key={card} style={{ width: 120, height: 225 }} />)}
+              {[0, 1, 2].map((card) => <SkeletonBlock key={card} style={{ width: 220, height: 220 * 9 / 16 }} />)}
             </View>
           </View>
         ))}
@@ -145,9 +159,4 @@ const styles = StyleSheet.create({
   section: { gap: spacing.sm },
   rail: { paddingHorizontal: spacing.md, gap: spacing.md },
   skeletonSection: { gap: spacing.md },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md },
-  errorTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: '700' },
-  muted: { color: colors.textSecondary, textAlign: 'center' },
-  retry: { minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.lg, borderRadius: 12, backgroundColor: colors.buttonGreen },
-  retryText: { color: colors.textPrimary, fontWeight: '700' },
 });

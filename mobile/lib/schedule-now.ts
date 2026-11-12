@@ -96,3 +96,22 @@ export function getScheduleNow(schedule: ScheduleResponse): ScheduleNow {
 export function getSlotWindow(slot: ScheduleSlot): SlotWindow | null {
   return getWindow(slot);
 }
+
+/**
+ * Cached schedules carry the fetch time and live flags. Drop both so "now"
+ * is recomputed from the device clock instead of a stale response.
+ */
+export function replaySchedule(schedule: ScheduleResponse): ScheduleResponse {
+  const clearLive = (slots: ScheduleSlot[] | undefined) =>
+    (slots ?? []).map((slot) => ({ ...slot, isNowPlaying: false }));
+  return {
+    ...schedule,
+    nigeriaTime: undefined,
+    slots: clearLive(schedule.slots),
+    week: schedule.week
+      ? Object.fromEntries(
+          Object.entries(schedule.week).map(([day, slots]) => [day, clearLive(slots)]),
+        )
+      : undefined,
+  };
+}
